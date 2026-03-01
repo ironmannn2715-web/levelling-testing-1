@@ -368,6 +368,21 @@
     <button onclick="render('cargo')" id="nav-cargo">INVENTORY</button>
 </nav>
 </div>
+<div id="evolution-overlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:black; z-index:10000; flex-direction:column; align-items:center; justify-content:center; font-family:'Courier New', monospace; color:#00ffff; text-align:center;">
+    <div id="analysis-header">
+        <h2 class="glitch-text">[ SYSTEM IS ANALYZING PLAYER HISTORY... ]</h2>
+        <div style="width:250px; height:2px; background:#111; margin:20px auto; border:1px solid #00ffff55;">
+            <div id="analysis-bar" style="width:0%; height:100%; background:#00ffff; transition: 3s linear;"></div>
+        </div>
+    </div>
+
+    <div id="analysis-result" style="display:none; transform: scale(0.8); opacity:0; transition: 1s ease-out;">
+        <p style="letter-spacing:5px; opacity:0.6;">NEW CLASS ACQUIRED:</p>
+        <h1 id="assigned-job-name" style="font-size:3.5rem; text-shadow:0 0 20px #00ffff; margin:10px 0;">---</h1>
+        <p id="job-bonus-text" style="color:#555; margin-bottom:30px;"></p>
+        <button onclick="confirmEvolution()" style="background:transparent; border:1px solid #00ffff; color:#00ffff; padding:12px 40px; cursor:pointer; font-weight:bold; letter-spacing:2px; transition:0.3s;">CONFIRM</button>
+    </div>
+</div>
 
 <script>
     // --- UPDATED SYSTEM SOUNDS ---
@@ -567,6 +582,29 @@ function completeMission(id) {
     `;
     document.body.appendChild(confirmOverlay);
 }
+    function systemClassAnalysis() {
+    const stats = p.stats;
+    const s = stats.STR || 0;
+    const a = stats.AGI || 0;
+    const i = stats.INT || 0;
+    const v = stats.VIT || 0;
+
+    // Determine the highest value
+    const maxVal = Math.max(s, a, i, v);
+
+    // Hidden "Shadow" Class condition (If all stats are high and balanced)
+    if (s > 40 && a > 40 && i > 40 && v > 40) {
+        return "SHADOW MONARCH";
+    }
+
+    // Standard Class assignment
+    if (s === maxVal) return "FIGHTER";
+    if (a === maxVal) return "ASSASSIN";
+    if (i === maxVal) return "MAGE";
+    if (v === maxVal) return "TANKER";
+
+    return "WARRIOR"; // Fallback
+}
     
 function checkDailyCompletion() {
     const regularMissions = p.missions.filter(m => !m.isSurprise);
@@ -591,47 +629,75 @@ function checkDailyCompletion() {
 }
 
     function gainExp(amount) {
-    if (!p) return;
-    
-    // 1. Add the EXP (Handles positive rewards and negative penalties)
     p.exp += amount;
-    if (p.exp < 0) p.exp = 0; 
+    let nextGoal = 100 + (p.level * 5);
 
-    // 2. Define the goal formula (Must match updateUI)
-    let nextLevelGoal = 100 + (p.level * 5);
-
-    // 3. The Overflow Loop
-    // This runs as long as your EXP is higher than the requirement
-    while (p.exp >= nextLevelGoal) {
-        p.exp -= nextLevelGoal; // Subtract cost, keep the "extra"
+    while (p.exp >= nextGoal) {
+        p.exp -= nextGoal;
         p.level++;
-        
-        // Recalculate goal for the NEW level
-        nextLevelGoal = 100 + (p.level * 5);
+        nextGoal = 100 + (p.level * 5);
 
-        // --- MILESTONE LOGIC ---
-        if (p.level === 5) {
-            playSfx('levelUp');
-            const bonuses = ["Blessed Box", "Rest Protocol", "Focus Token"];
-            bonuses.forEach(item => { p.cargo[item] = (p.cargo[item] || 0) + 1; });
-            showSystemMessage("MILESTONE 5", `Level 5 reached. Bonus rewards granted.`);
-        } 
-        else if (p.level === 10) {
-            document.body.classList.add('system-glitch');
-            playSfx('alert');
-            setTimeout(() => {
-                document.body.classList.remove('system-glitch');
-                showSystemMessage("SYSTEM OVERRIDE", `LEVEL 10: SURPRISE QUESTS UNLOCKED. Penalty active.`);
-            }, 1000);
-        } 
-        else {
-            playSfx('levelUp');
-            showSystemMessage("LEVEL UP", `Reached Level ${p.level}`);
+        // --- LEVEL 40 SYSTEM EVOLUTION ---
+        if (p.level === 40 && (p.job === "Unawakened" || p.job === "None")) {
+            startSystemEvolution();
+            return; // Pause other level ups until job is accepted
         }
+
+        playSfx('levelUp');
+    }
+    updateUI();
+    save();
+}
+
+function startSystemEvolution() {
+    const overlay = document.getElementById('evolution-overlay');
+    const bar = document.getElementById('analysis-bar');
+    const result = document.getElementById('analysis-result');
+    const jobText = document.getElementById('assigned-job-name');
+    const bonusText = document.getElementById('job-bonus-text');
+
+    overlay.style.display = 'flex';
+    playSfx('alert');
+
+    // 1. Start the progress bar
+    setTimeout(() => { bar.style.width = "100%"; }, 100);
+
+    // 2. Decide the job
+    const finalJob = systemClassAnalysis();
+
+    // 3. Reveal the job after the "Analysis" finishes (3 seconds)
+    setTimeout(() => {
+        document.getElementById('analysis-header').style.opacity = "0.3";
+        jobText.innerText = finalJob;
+        bonusText.innerText = `All ${finalJob} related stats increased by +25.`;
+        
+        result.style.display = 'block';
+        setTimeout(() => { 
+            result.style.opacity = "1"; 
+            result.style.transform = "scale(1)"; 
+        }, 50);
+        
+        playSfx('levelUp');
+    }, 3200);
+}
+
+function confirmEvolution() {
+    const jobName = document.getElementById('assigned-job-name').innerText;
+    p.job = jobName;
+
+    // Apply scaling bonuses based on the system's choice
+    if (jobName === "FIGHTER") p.stats.STR += 25;
+    if (jobName === "MAGE") p.stats.INT += 25;
+    if (jobName === "ASSASSIN") p.stats.AGI += 25;
+    if (jobName === "TANKER") p.stats.VIT += 25;
+    if (jobName === "SHADOW MONARCH") {
+        p.stats.STR += 50; p.stats.INT += 50; // Legendary bonus
     }
 
-    // 4. Update the screen immediately
+    document.getElementById('evolution-overlay').style.display = 'none';
+    showSystemMessage("EVOLUTION COMPLETE", `You are now a ${jobName}.`);
     updateUI();
+    save();
 }
     
 
