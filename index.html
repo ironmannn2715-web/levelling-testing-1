@@ -337,22 +337,6 @@
     </style>
 </head>
 <body>
-</div>
-<div id="evolution-overlay" class="overlay hidden">
-    <div id="evo-loading" class="hologram">
-        <h2 style="font-weight:300;">[ SYSTEM ANALYSIS ]</h2>
-        <div style="width:100%; height:2px; background:#111; margin-top:20px;">
-            <div id="evo-bar-fill" style="width:0%; height:100%; background:var(--accent); transition: 2s linear;"></div>
-        </div>
-    </div>
-    <div id="evo-result" class="hologram hidden">
-        <h1 id="revealed-job">---</h1>
-        <p id="job-reward-desc"></p>
-        <button class="btn" onclick="confirmJobChange()">Accept Evolution</button>
-    </div>
-</div>
-
-
 <div class="app-container">
     <div id="notice-overlay" class="overlay">
         <div class="hologram">
@@ -384,6 +368,21 @@
     </div>
     <div class="exp-bar"><div id="exp-fill" class="exp-fill"></div></div>
     <div id="exp-counter" style="font-family:'JetBrains Mono'; font-size:0.65rem; color:#555; text-align:right; margin-top:5px;">0 / 100 EXP</div>
+    </div>
+    <div id="evolution-overlay" class="overlay hidden">
+        <div id="evo-loading" class="hologram">
+            <h2 style="font-weight:300;">[ SYSTEM ANALYSIS ]</h2>
+            <div style="width:100%; height:2px; background:#111; margin-top:20px;">
+                <div id="evo-bar-fill" style="width:0%; height:100%; background:var(--accent); transition: 2s linear;"></div>
+            </div>
+        </div>
+        <div id="evo-result" class="hologram hidden">
+            <h1 id="revealed-job">---</h1>
+            <p id="job-reward-desc"></p>
+            <button class="btn" onclick="confirmJobChange()">Accept Evolution</button>
+        </div>
+    </div>
+
 </header>
 
     <div id="main-content" class="content hidden"></div>
