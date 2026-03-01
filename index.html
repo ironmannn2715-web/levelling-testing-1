@@ -372,6 +372,14 @@
 </header>
 
     <div id="main-content" class="content hidden"></div>
+
+    <nav id="main-nav" class="hidden">
+        <button onclick="render('status')" id="nav-status">STATUS</button>
+        <button onclick="render('mission')" id="nav-mission">QUESTS</button>
+        <button onclick="render('ranking')" id="nav-ranking">RANKING</button> 
+        <button onclick="render('cargo')" id="nav-cargo">INVENTORY</button>
+    </nav>
+
     <div id="evolution-overlay" class="overlay hidden">
         <div id="evo-loading" class="hologram">
             <h2 style="font-weight:300;">[ SYSTEM ANALYSIS ]</h2>
@@ -386,12 +394,8 @@
         </div>
     </div>
 
-    <nav id="main-nav" class="hidden">
-    <button onclick="render('status')" id="nav-status">STATUS</button>
-    <button onclick="render('mission')" id="nav-mission">QUESTS</button>
-    <button onclick="render('ranking')" id="nav-ranking">RANKING</button> 
-    <button onclick="render('cargo')" id="nav-cargo">INVENTORY</button>
-</nav>
+</div> 
+
 <script>
 function triggerJobChange() {
     // 1. Force close any stuck item-consumption messages
