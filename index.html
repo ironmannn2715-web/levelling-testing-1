@@ -748,74 +748,6 @@ async function executeMission(id) {
     }
 }
 };
-function triggerJobChange() {
-// 1. Show the Evolution UI
-const overlay = document.getElementById('evolution-overlay');
-const bar = document.getElementById('evo-bar-fill');
-
-overlay.classList.remove('hidden');
-playSfx('alert');
-
-// 2. Animate the System Bar
-setTimeout(() => { bar.style.width = "100%"; }, 100);
-
-// 3. The System Decides (After 3 seconds)
-setTimeout(() => {
-    const s = p.stats;
-    const max = Math.max(s.STR, s.AGI, s.INT, s.VIT, s.FOC);
-    let finalJob = { name: "WARRIOR", bonus: "STR +30" };
-
-    // --- THE HIDDEN CLASS (Solo Leveling Style) ---
-    // If you are balanced and strong, you get the Monarch
-    if(s.STR >= 45 && s.AGI >= 45 && s.INT >= 45 && s.VIT >= 45) {
-        finalJob = { name: "SHADOW MONARCH", bonus: "ALL STATS +50" };
-    } 
-    // --- THE STANDARD CLASSES ---
-    else if(s.STR === max) finalJob = { name: "FIGHTER", bonus: "STR +30" };
-    else if(s.AGI === max) finalJob = { name: "ASSASSIN", bonus: "AGI +30" };
-    else if(s.INT === max) finalJob = { name: "MAGE", bonus: "INT +30" };
-    else if(s.VIT === max) finalJob = { name: "TANKER", bonus: "VIT +30" };
-    else if(s.FOC === max) finalJob = { name: "ARCHER", bonus: "FOC +30" };
-
-    // 4. Reveal to Player
-    document.getElementById('evo-loading').classList.add('hidden');
-    document.getElementById('evo-result').classList.remove('hidden');
-    
-    const jobTitle = document.getElementById('revealed-job');
-    jobTitle.innerText = finalJob.name;
-    document.getElementById('job-reward-desc').innerText = `REWARD: ${finalJob.bonus}`;
-    
-    if(finalJob.name === "SHADOW MONARCH") {
-        jobTitle.style.color = "#ff00ff";
-        jobTitle.style.textShadow = "0 0 20px #ff00ff";
-        document.body.classList.add('system-glitch');
-    }
-    
-    playSfx('levelUp');
-}, 3500);
-}
-function confirmJobChange() {
-const jobName = document.getElementById('revealed-job').innerText;
-p.job = jobName;
-
-// Apply the permanent stat rewards
-if(jobName === "SHADOW MONARCH") {
-    Object.keys(p.stats).forEach(k => p.stats[k] += 50);
-} else if(jobName === "FIGHTER") p.stats.STR += 30;
-else if(jobName === "ASSASSIN") p.stats.AGI += 30;
-else if(jobName === "MAGE") p.stats.INT += 30;
-else if(jobName === "TANKER") p.stats.VIT += 30;
-else if(jobName === "ARCHER") p.stats.FOC += 30;
-
-// Close and Update
-document.getElementById('evolution-overlay').classList.add('hidden');
-document.body.classList.remove('system-glitch');
-
-showSystemMessage("EVOLUTION COMPLETE", `You have become the ${jobName}.`);
-updateUI();
-save();
-render('status'); // Refresh chart
-}
 
 function handleItemInteraction(itemName) {
     const now = Date.now();
@@ -840,7 +772,7 @@ function handleItemInteraction(itemName) {
     }
     lastTap = now;
 }
-    
+
 function consumeItem(itemName) {
     if (p.cargo[itemName] > 0) {
         // Clear previous info boxes
@@ -1058,6 +990,95 @@ function consumeItem(itemName) {
           console.error("Leaderboard Error:", error);
           lbDisplay.innerHTML = `<div style="color:var(--danger); font-size:0.7rem;">FAILED TO SYNC RANKINGS. CHECK INDEXES.</div>`;
       });
+}
+function triggerJobChange() {
+    // 1. Force close any stuck item-consumption messages
+    const overlays = document.querySelectorAll('.overlay');
+    overlays.forEach(el => {
+        if(el.id !== 'evolution-overlay') el.remove(); 
+    });
+
+    // 2. Access the Evolution UI
+    const evoOverlay = document.getElementById('evolution-overlay');
+    const evoLoading = document.getElementById('evo-loading');
+    const evoResult = document.getElementById('evo-result');
+    const bar = document.getElementById('evo-bar-fill');
+
+    // 3. Reset and Show Screen
+    evoOverlay.classList.remove('hidden');
+    evoLoading.classList.remove('hidden');
+    evoResult.classList.add('hidden');
+    bar.style.width = "0%";
+    
+    playSfx('alert');
+
+    // 4. Start Loading Animation (Cinematic Delay)
+    setTimeout(() => { bar.style.width = "100%"; }, 100);
+
+    // 5. The System Decision (After 3 seconds)
+    setTimeout(() => {
+        const s = p.stats;
+        const max = Math.max(s.STR, s.AGI, s.INT, s.VIT, s.FOC);
+        let finalJob = { name: "WARRIOR", bonus: "STR +30" };
+
+        // Logic: Check for Hidden Shadow Monarch first
+        if(s.STR >= 45 && s.AGI >= 45 && s.INT >= 45 && s.VIT >= 45) {
+            finalJob = { name: "SHADOW MONARCH", bonus: "ALL STATS +50" };
+        } 
+        // Logic: Standard Class selection based on MAX stat
+        else if(s.STR === max) finalJob = { name: "FIGHTER", bonus: "STR +30" };
+        else if(s.AGI === max) finalJob = { name: "ASSASSIN", bonus: "AGI +30" };
+        else if(s.INT === max) finalJob = { name: "MAGE", bonus: "INT +30" };
+        else if(s.VIT === max) finalJob = { name: "TANKER", bonus: "VIT +30" };
+        else if(s.FOC === max) finalJob = { name: "ARCHER", bonus: "FOC +30" };
+
+        // Update UI with Result
+        evoLoading.classList.add('hidden');
+        evoResult.classList.remove('hidden');
+        
+        const jobTitle = document.getElementById('revealed-job');
+        jobTitle.innerText = finalJob.name;
+        document.getElementById('job-reward-desc').innerText = finalJob.bonus;
+        
+        // Special Visuals for Monarch
+        if(finalJob.name === "SHADOW MONARCH") {
+            jobTitle.style.color = "#ff00ff";
+            jobTitle.style.textShadow = "0 0 15px #ff00ff";
+            document.body.classList.add('system-glitch');
+        } else {
+            jobTitle.style.color = "var(--accent)";
+            jobTitle.style.textShadow = "none";
+        }
+        
+        playSfx('levelUp');
+    }, 3200);
+}
+function confirmJobChange() {
+    const jobName = document.getElementById('revealed-job').innerText;
+    
+    // 1. Update Player Record
+    p.job = jobName;
+    
+    // 2. Apply Reward Points
+    if(jobName === "SHADOW MONARCH") {
+        Object.keys(p.stats).forEach(k => p.stats[k] += 50);
+    } else if(jobName === "FIGHTER") p.stats.STR += 30;
+    else if(jobName === "ASSASSIN") p.stats.AGI += 30;
+    else if(jobName === "MAGE") p.stats.INT += 30;
+    else if(jobName === "TANKER") p.stats.VIT += 30;
+    else if(jobName === "ARCHER") p.stats.FOC += 30;
+
+    // 3. Clean up UI
+    document.getElementById('evolution-overlay').classList.add('hidden');
+    document.body.classList.remove('system-glitch');
+    
+    // 4. Final Notification
+    showSystemMessage("EVOLUTION COMPLETE", `The System has recognized you as: <br><b>${jobName}</b>`);
+    
+    // 5. Save and Refresh
+    save();
+    updateUI();
+    render('status'); 
 }
 </script>
 </body>
