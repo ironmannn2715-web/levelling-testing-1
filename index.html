@@ -168,6 +168,17 @@
             color: var(--accent); 
             text-shadow: 0 0 10px rgba(0,212,255,0.4);
         }
+        /* Add this to your CSS */
+        .hidden {
+            display: none !important;
+            visibility: hidden !important;
+            opacity: 0 !important;
+            pointer-events: none !important; /* This prevents the hidden box from blocking clicks */
+        }
+
+        #evolution-overlay {
+            z-index: 9999; /* Make sure this is the highest number */
+        }
 
         /* Mobile-First Navigation */
         nav {
@@ -547,14 +558,18 @@ function playSfx(type) {
         if (user) syncHunter(user);
     });
 
-    async function signIn() {
-        await auth.signInWithPopup(provider);
-    }
+    function signIn() {
+    // ... your sign in logic ...
+    document.getElementById('auth-overlay').classList.add('hidden');
+    document.getElementById('main-header').classList.remove('hidden');
+    document.getElementById('main-nav').classList.remove('hidden');
+    render('status'); // Show the first screen
+}
 
     function showAuth() {
-        document.getElementById('notice-overlay').classList.add('hidden');
-        document.getElementById('auth-overlay').classList.remove('hidden');
-    }
+    document.getElementById('notice-overlay').classList.add('hidden');
+    document.getElementById('auth-overlay').classList.remove('hidden');
+}
 
     // --- DATA SYNC ---
     async function syncHunter(user) {
