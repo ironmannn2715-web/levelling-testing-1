@@ -8,6 +8,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>THE SYSTEM | AWAKENING</title>
     <link rel="icon" type="image/png" href="https://img.icons8.com/neon/96/00d4ff/shield.png">
+    <link rel="apple-touch-icon" href="https://img.icons8.com/neon/96/00d4ff/shield.png">
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
@@ -21,46 +22,306 @@
             --danger: #ff3e3e;
             --success: #00ff95;
             --border: rgba(255,255,255,0.1);
-            --legendary: #ff00ff;
         }
 
-        body { background: var(--bg); color: #e0e0e0; font-family: 'Inter', sans-serif; margin: 0; overflow: hidden; display: flex; justify-content: center; }
-        .app-container { width: 100%; max-width: 480px; height: 100dvh; position: relative; background: radial-gradient(circle at top, #0a0f18 0%, #030508 100%); display: flex; flex-direction: column; }
+        /* Responsive Mobile Frame */
+        body { 
+            background: var(--bg); 
+            color: #e0e0e0; 
+            font-family: 'Inter', sans-serif; 
+            margin: 0; 
+            overflow: hidden; 
+            display: flex; 
+            justify-content: center; 
+        }
 
-        /* Glitch Animation */
-        @keyframes glitch-shake { 0% { transform: translate(0); } 20% { transform: translate(-3px, 3px); } 40% { transform: translate(-3px, -3px); } 60% { transform: translate(3px, 3px); } 100% { transform: translate(0); } }
-        .system-glitch { animation: glitch-shake 0.2s infinite; filter: hue-rotate(90deg) contrast(1.5); }
+        .app-container {
+            width: 100%;
+            max-width: 480px;
+            height: 100dvh;
+            position: relative;
+            background: radial-gradient(circle at top, #0a0f18 0%, #030508 100%);
+            display: flex;
+            flex-direction: column;
+        }
+        @keyframes glitch-shake {
+            0% { transform: translate(0); }
+            20% { transform: translate(-5px, 5px); }
+            40% { transform: translate(-5px, -5px); }
+            60% { transform: translate(5px, 5px); }
+            80% { transform: translate(5px, -5px); }
+            100% { transform: translate(0); }
+        }
 
-        .overlay { position: absolute; inset: 0; z-index: 5000; background: rgba(0,0,0,0.95); backdrop-filter: blur(12px); display: flex; align-items: center; justify-content: center; padding: 40px; text-align: center; }
-        .hologram { border: 1px solid var(--accent); padding: 30px; box-shadow: 0 0 30px rgba(0, 212, 255, 0.2); background: rgba(0, 20, 40, 0.4); }
+.system-glitch {
+    animation: glitch-shake 0.3s infinite;
+    filter: hue-rotate(90deg) contrast(1.5);
+    background-color: rgba(0, 212, 255, 0.1) !important;
+}
 
-        /* Header & Stats */
-        header { padding: 50px 25px 20px; border-bottom: 1px solid var(--border); background: rgba(0,0,0,0.3); }
-        .hunter-name { font-family: 'JetBrains Mono'; font-size: 1.1rem; color: var(--accent); letter-spacing: 3px; text-transform: uppercase; }
-        .rank-box { font-family: 'JetBrains Mono'; font-size: 0.85rem; color: #888; font-weight: 700; }
-        #job-display { font-size: 0.75rem; color: var(--accent); font-family: 'JetBrains Mono'; margin-top: 2px; }
-        .lvl-text { font-size: 3.2rem; font-weight: 300; margin: 10px 0; line-height: 1; }
-        .exp-bar { width: 100%; height: 2px; background: #111; margin-top: 15px; border-radius: 2px; overflow: hidden; }
-        .exp-fill { height: 100%; background: var(--accent); width: 0%; transition: 1.5s cubic-bezier(0.19, 1, 0.22, 1); box-shadow: 0 0 10px var(--accent); }
+        /* Cinematic Overlays */
+        .overlay {
+            position: absolute;
+            inset: 0;
+            z-index: 5000;
+            background: rgba(0,0,0,0.95);
+            backdrop-filter: blur(12px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
+            text-align: center;
+        }
 
-        /* Content Area */
-        .content { flex: 1; overflow-y: auto; padding: 20px 25px 120px; -webkit-overflow-scrolling: touch; }
-        .chart-wrap { width: 100%; max-width: 300px; margin: 0 auto 25px; }
-        .quest-card { background: rgba(255,255,255,0.02); border: 1px solid var(--border); padding: 20px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; border-radius: 8px; }
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+.btn-confirm { border-color: var(--success); color: var(--success); }
+.btn-cancel { border-color: var(--danger); color: var(--danger); }
+
+        .hologram {
+            border: 1px solid var(--accent);
+            padding: 30px;
+            box-shadow: 0 0 30px rgba(0, 212, 255, 0.2);
+            animation: expand 0.4s ease-out;
+            background: rgba(0, 20, 40, 0.4);
+        }
+
+        /* Header Layout */
+        header { 
+            padding: 50px 25px 20px; 
+            border-bottom: 1px solid var(--border); 
+            background: rgba(0,0,0,0.3);
+        }
+
+        .hunter-name { 
+            font-family: 'JetBrains Mono'; 
+            font-size: 0.75rem; 
+            color: var(--accent); 
+            letter-spacing: 4px; 
+            text-transform: uppercase; 
+        }
+
+        .rank-box { 
+            font-family: 'JetBrains Mono'; 
+            font-size: 0.6rem; 
+            color: #555; 
+            letter-spacing: 2px; 
+        }
+
+        .lvl-text { font-size: 2.5rem; font-weight: 300; margin: 5px 0; }
+
+        .exp-bar { 
+            width: 100%; 
+            height: 2px; 
+            background: #111; 
+            margin-top: 15px; 
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .exp-fill { 
+            height: 100%; 
+            background: var(--accent); 
+            width: 0%; 
+            transition: 1.5s cubic-bezier(0.19, 1, 0.22, 1); 
+            box-shadow: 0 0 10px var(--accent);
+        }
+
+        /* Scrollable Content Area */
+        .content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px 25px 120px; /* Space for Nav */
+            -webkit-overflow-scrolling: touch;
+        }
+
+        /* Stats & Pentagraph */
+        .chart-wrap { 
+            width: 100%; 
+            max-width: 300px; 
+            margin: 0 auto 25px; 
+        }
+
+        .quest-card {
+            background: rgba(255,255,255,0.02);
+            border: 1px solid var(--border);
+            padding: 20px;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-radius: 8px;
+        }
+
         .quest-card.done { border-color: var(--success); opacity: 0.4; }
-        #timer { font-family: 'JetBrains Mono'; font-size: 2.2rem; text-align: center; margin-bottom: 30px; color: var(--accent); }
 
-        /* Nav */
-        nav { position: absolute; bottom: 0; width: 100%; height: 85px; background: rgba(5, 7, 10, 0.98); border-top: 1px solid var(--border); display: flex; padding-bottom: env(safe-area-inset-bottom); z-index: 4000; }
-        nav button { flex: 1; background: none; border: none; color: #444; font-family: 'JetBrains Mono'; font-size: 0.65rem; font-weight: bold; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: 0.3s; }
-        nav button.active { color: var(--accent); text-shadow: 0 0 8px var(--accent); }
+        #timer { 
+            font-family: 'JetBrains Mono'; 
+            font-size: 2.2rem; 
+            text-align: center; 
+            margin-bottom: 30px; 
+            color: var(--accent); 
+            text-shadow: 0 0 10px rgba(0,212,255,0.4);
+        }
 
-        .btn { background: transparent; border: 1px solid var(--accent); color: var(--accent); padding: 14px 30px; font-family: 'JetBrains Mono'; cursor: pointer; text-transform: uppercase; font-size: 0.8rem; letter-spacing: 2px; }
+        /* Mobile-First Navigation */
+        nav {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            height: 85px;
+            background: rgba(5, 7, 10, 0.98);
+            border-top: 1px solid var(--border);
+            display: flex;
+            padding-bottom: env(safe-area-inset-bottom);
+            z-index: 4000;
+        }
+
+        nav button {
+            flex: 1;
+            background: none;
+            border: none;
+            color: #444;
+            font-family: 'JetBrains Mono';
+            font-size: 0.65rem;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: 0.3s;
+        }
+
+        /* Leaderboard Styling */
+.lb-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.lb-item {
+    display: flex;
+    align-items: center;
+    padding: 15px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    position: relative;
+    overflow: hidden;
+}
+
+.lb-item.is-me {
+    border-color: var(--accent);
+    background: rgba(0, 212, 255, 0.05);
+}
+
+.lb-rank {
+    font-family: 'JetBrains Mono';
+    font-size: 1.2rem;
+    font-weight: 700;
+    width: 45px;
+    color: #444;
+}
+
+.lb-info { flex: 1; }
+.lb-info .name { 
+    display: block; 
+    font-size: 0.85rem; 
+    text-transform: uppercase; 
+    letter-spacing: 1px; 
+}
+
+.lb-info .job { 
+    font-size: 0.6rem; 
+    color: var(--accent); 
+    opacity: 0.7; 
+}
+
+.lb-level {
+    font-family: 'JetBrains Mono';
+    font-weight: bold;
+    color: var(--accent);
+}
+
+/* Top 3 Glow */
+.lb-item:nth-child(1) .lb-rank { color: #FFD700; text-shadow: 0 0 10px #FFD70055; }
+.lb-item:nth-child(2) .lb-rank { color: #C0C0C0; }
+.lb-item:nth-child(3) .lb-rank { color: #CD7F32; }
+
+        /* Update these in your <style> section */
+
+.hunter-name { 
+    font-family: 'JetBrains Mono'; 
+    font-size: 1.1rem; /* Increased from 0.75rem */
+    color: var(--accent); 
+    letter-spacing: 3px; 
+    text-transform: uppercase;
+    display: block;
+    margin-bottom: 4px;
+}
+
+.rank-box { 
+    font-family: 'JetBrains Mono'; 
+    font-size: 0.85rem; /* Increased from 0.6rem */
+    color: #888; /* Slightly lighter for better contrast */
+    letter-spacing: 2px;
+    font-weight: 700;
+}
+
+#job-display {
+    font-size: 0.75rem !important; /* Increased from 0.5rem */
+    color: var(--accent); 
+    opacity: 0.8 !important; /* More visible than 0.5 */
+    letter-spacing: 1px;
+    margin-top: 2px;
+    font-family: 'JetBrains Mono';
+}
+
+.lvl-text { 
+    font-size: 3.2rem; /* Increased from 2.5rem */
+    font-weight: 300; 
+    margin: 10px 0; 
+    line-height: 1;
+}
+
+#lvl-display {
+    font-weight: 700; /* Makes the number stand out */
+}
+
+        nav button.active {
+            color: var(--accent);
+            text-shadow: 0 0 8px var(--accent);
+        }
+
+        nav button.active::after {
+            content: '';
+            width: 15px;
+            height: 2px;
+            background: var(--accent);
+            margin-top: 8px;
+        }
+
+        .btn { 
+            background: transparent; 
+            border: 1px solid var(--accent); 
+            color: var(--accent); 
+            padding: 14px 30px; 
+            font-family: 'JetBrains Mono'; 
+            cursor: pointer; 
+            text-transform: uppercase; 
+            font-size: 0.8rem;
+            letter-spacing: 2px;
+        }
+
+        @keyframes expand { from { transform: scaleX(0); opacity: 0; } to { transform: scaleX(1); opacity: 1; } }
         .hidden { display: none !important; }
-
-        /* Evolution Specific UI */
-        #evo-bar-container { width: 200px; height: 2px; background: #111; margin: 20px auto; position: relative; }
-        #evo-bar-fill { height: 100%; width: 0%; background: var(--accent); transition: 3s linear; }
     </style>
 </head>
 <body>
@@ -81,55 +342,68 @@
         </div>
     </div>
 
-    <div id="evolution-overlay" class="overlay hidden">
-        <div id="evo-loading" class="hologram">
-            <h2 style="letter-spacing:2px; font-weight:300;">[ SYSTEM ANALYSIS ]</h2>
-            <p style="font-size:0.75rem; opacity:0.6;">Calculating player potential based on combat history...</p>
-            <div id="evo-bar-container"><div id="evo-bar-fill"></div></div>
+    <header id="main-header" class="hidden">
+    <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+        <div style="flex: 1;">
+            <span class="hunter-name" id="disp-name">PLAYER_UNKNOWN</span>
+            <div id="rank-display" class="rank-box">RANK: E</div>
+            <div id="job-display">UNAWAKENED</div>
+            <div class="lvl-text">LVL <span id="lvl-display">01</span></div>
         </div>
-        <div id="evo-result" class="hologram hidden">
-            <p style="font-size:0.7rem; color:#888;">NEW CLASS ACQUIRED:</p>
-            <h1 id="revealed-job" style="font-size:2.5rem; text-shadow:0 0 20px var(--accent); margin:10px 0;">---</h1>
-            <p id="job-reward-desc" style="font-size:0.8rem; color:var(--success); margin-bottom:20px;"></p>
-            <button class="btn" onclick="confirmJobChange()">Accept Evolution</button>
+        <div style="text-align: right; padding-top: 5px;">
+            <div class="rank-box" style="font-size: 0.6rem; opacity: 0.6;">STREAK</div>
+            <div style="font-size: 1.6rem; color: var(--accent); font-weight: 700;" id="streak-display">0</div>
         </div>
     </div>
-
-    <header id="main-header" class="hidden">
-        <div style="display:flex; justify-content:space-between; align-items:flex-start;">
-            <div style="flex: 1;">
-                <span class="hunter-name" id="disp-name">PLAYER_UNKNOWN</span>
-                <div id="rank-display" class="rank-box">RANK: E</div>
-                <div id="job-display">UNAWAKENED</div>
-                <div class="lvl-text">LVL <span id="lvl-display">01</span></div>
-            </div>
-            <div style="text-align: right; padding-top: 5px;">
-                <div class="rank-box" style="font-size: 0.6rem; opacity: 0.6;">STREAK</div>
-                <div style="font-size: 1.6rem; color: var(--accent); font-weight: 700;" id="streak-display">0</div>
-            </div>
-        </div>
-        <div class="exp-bar"><div id="exp-fill" class="exp-fill"></div></div>
-        <div id="exp-counter" style="font-family:'JetBrains Mono'; font-size:0.65rem; color:#555; text-align:right; margin-top:5px;">0 / 100 EXP</div>
-    </header>
+    <div class="exp-bar"><div id="exp-fill" class="exp-fill"></div></div>
+    <div id="exp-counter" style="font-family:'JetBrains Mono'; font-size:0.65rem; color:#555; text-align:right; margin-top:5px;">0 / 100 EXP</div>
+</header>
 
     <div id="main-content" class="content hidden"></div>
 
     <nav id="main-nav" class="hidden">
-        <button onclick="render('status')" id="nav-status">STATUS</button>
-        <button onclick="render('mission')" id="nav-mission">QUESTS</button>
-        <button onclick="render('ranking')" id="nav-ranking">RANKING</button> 
-        <button onclick="render('cargo')" id="nav-cargo">INVENTORY</button>
-    </nav>
+    <button onclick="render('status')" id="nav-status">STATUS</button>
+    <button onclick="render('mission')" id="nav-mission">QUESTS</button>
+    <button onclick="render('ranking')" id="nav-ranking">RANKING</button> 
+    <button onclick="render('cargo')" id="nav-cargo">INVENTORY</button>
+</nav>
 </div>
 
 <script>
+    // --- UPDATED SYSTEM SOUNDS ---
+const sounds = {
+    // Sharp digital "Chime" for standard notifications
+    ping: new Audio('https://raw.githubusercontent.com/Aris-T004/Test-Assets/main/system-notification.mp3'), 
+    
+    // Heavy electronic "Thud/Level Up"
+    levelUp: new Audio('https://raw.githubusercontent.com/Aris-T004/Test-Assets/main/level-up.mp3'),
+    
+    // Quick "Blade/Woosh" sound for menu clicks
+    click: new Audio('https://raw.githubusercontent.com/Aris-T004/Test-Assets/main/ui-click.mp3'),
+    
+    // Glitchy "Danger" sound for Surprise Quests/Alerts
+    alert: new Audio('https://raw.githubusercontent.com/Aris-T004/Test-Assets/main/system-alert.mp3'),
+    
+    // High-pitched "Crystal" sound for item consumption
+    consume: new Audio('https://raw.githubusercontent.com/Aris-T004/Test-Assets/main/item-use.mp3')
+};
+
+function playSfx(type) {
+    if (sounds[type]) {
+        const sfx = sounds[type];
+        sfx.currentTime = 0; 
+        sfx.volume = 0.5; // Slightly louder for impact
+        sfx.play().catch(e => console.warn("Interaction required for audio."));
+    }
+}
+    // --- FIREBASE CONFIG ---
     const firebaseConfig = {
-        apiKey: "AIzaSyBBRAVqR1ZqthOmcYs9rxJULe7_w9AumJ4",
-        authDomain: "levelling-faa1b.firebaseapp.com",
-        projectId: "levelling-faa1b",
-        storageBucket: "levelling-faa1b.firebasestorage.app",
-        messagingSenderId: "586212668823",
-        appId: "1:586212668823:web:12eac7b3e53e4c840e40d2"
+        apiKey: "AIzaSyBBveJmrWxVnnalA34G7KZR6COhrOcxiok",
+        authDomain: "solo-levelling-system-5edae.firebaseapp.com",
+        projectId: "solo-levelling-system-5edae",
+        storageBucket: "solo-levelling-system-5edae.firebasestorage.app",
+        messagingSenderId: "800420338485",
+        appId: "1:800420338485:web:faa95b0a692fe9abb8ca7c"
     };
 
     firebase.initializeApp(firebaseConfig);
@@ -138,26 +412,33 @@
     const provider = new firebase.auth.GoogleAuthProvider();
 
     let p = null; 
+    let timerId = null;
     let statsChart = null;
+    let lastTap = 0;
 
-    const sounds = {
-        ping: new Audio('https://raw.githubusercontent.com/Aris-T004/Test-Assets/main/system-notification.mp3'), 
-        levelUp: new Audio('https://raw.githubusercontent.com/Aris-T004/Test-Assets/main/level-up.mp3'),
-        alert: new Audio('https://raw.githubusercontent.com/Aris-T004/Test-Assets/main/system-alert.mp3'),
-        consume: new Audio('https://raw.githubusercontent.com/Aris-T004/Test-Assets/main/item-use.mp3')
-    };
+    // --- AUTH ---
+    auth.onAuthStateChanged(user => {
+        if (user) syncHunter(user);
+    });
 
-    function playSfx(type) { if(sounds[type]) { sounds[type].currentTime = 0; sounds[type].play().catch(() => {}); } }
+    async function signIn() {
+        await auth.signInWithPopup(provider);
+    }
 
-    auth.onAuthStateChanged(user => { if (user) syncHunter(user); });
-    async function signIn() { await auth.signInWithPopup(provider); }
-    function showAuth() { document.getElementById('notice-overlay').classList.add('hidden'); document.getElementById('auth-overlay').classList.remove('hidden'); }
+    function showAuth() {
+        document.getElementById('notice-overlay').classList.add('hidden');
+        document.getElementById('auth-overlay').classList.remove('hidden');
+    }
 
+    // --- DATA SYNC ---
     async function syncHunter(user) {
         const docRef = db.collection('hunters').doc(user.uid);
         const doc = await docRef.get();
-        if (doc.exists) { p = doc.data(); } 
-        else {
+
+        if (doc.exists) {
+            p = doc.data();
+            checkSystemDay();
+        } else {
             p = {
                 name: user.displayName, level: 1, exp: 0, streak: 0, job: "UNAWAKENED",
                 stats: { STR: 10, AGI: 10, VIT: 10, INT: 10, FOC: 10 },
@@ -169,130 +450,389 @@
     }
 
     function boot() {
-        document.querySelectorAll('.overlay:not(#evolution-overlay)').forEach(el => el.classList.add('hidden'));
+        document.querySelectorAll('.overlay').forEach(el => el.classList.add('hidden'));
         document.querySelectorAll('header, nav, #main-content').forEach(el => el.classList.remove('hidden'));
         document.getElementById('disp-name').innerText = p.name.toUpperCase();
+        if (!p.missions || p.missions.length === 0) generateQuests();
         updateUI();
         render('status');
     }
 
-    function save() { if(auth.currentUser) db.collection('hunters').doc(auth.currentUser.uid).update(p); }
+    function save() { 
+        if(auth.currentUser) db.collection('hunters').doc(auth.currentUser.uid).update(p); 
+    }
 
-    // --- JOB EVOLUTION SYSTEM ---
-    function triggerJobChange() {
-        const overlay = document.getElementById('evolution-overlay');
-        const bar = document.getElementById('evo-bar-fill');
-        overlay.classList.remove('hidden');
-        playSfx('alert');
-
-        setTimeout(() => { bar.style.width = "100%"; }, 100);
-
-        setTimeout(() => {
-            const result = analyzeStats();
-            document.getElementById('evo-loading').classList.add('hidden');
-            document.getElementById('evo-result').classList.remove('hidden');
-            document.getElementById('revealed-job').innerText = result.name;
-            document.getElementById('job-reward-desc').innerText = `Bonus: ${result.bonus}`;
-            
-            if(result.name === "SHADOW MONARCH") {
-                document.getElementById('revealed-job').style.color = "var(--legendary)";
-                document.body.classList.add('system-glitch');
+    function checkSystemDay() {
+        const today = new Date().toDateString();
+        if (p.lastUpdate !== today) {
+            const incomplete = p.missions.some(m => !m.done);
+            if (incomplete && p.level > 1) {
+                p.level--; p.streak = 0;
+                alert("PENALTY PROTOCOL: Daily Quest Incomplete. Level Reduced.");
             }
-            playSfx('levelUp');
-        }, 3200);
-    }
-
-    function analyzeStats() {
-        const s = p.stats;
-        const max = Math.max(s.STR, s.AGI, s.INT, s.VIT);
-
-        // Legendary condition: All stats high and balanced
-        if(s.STR > 45 && s.AGI > 45 && s.INT > 45 && s.VIT > 45) {
-            return { name: "SHADOW MONARCH", bonus: "ALL STATS +50" };
+            p.lastUpdate = today;
+            generateQuests();
+            save();
         }
-        if(s.STR === max) return { name: "FIGHTER", bonus: "STR +30" };
-        if(s.AGI === max) return { name: "ASSASSIN", bonus: "AGI +30" };
-        if(s.INT === max) return { name: "MAGE", bonus: "INT +30" };
-        return { name: "TANKER", bonus: "VIT +30" };
     }
 
-    function confirmJobChange() {
-        const job = document.getElementById('revealed-job').innerText;
-        p.job = job;
-        
-        // Apply Bonus
-        if(job === "SHADOW MONARCH") Object.keys(p.stats).forEach(k => p.stats[k] += 50);
-        else if(job === "FIGHTER") p.stats.STR += 30;
-        else if(job === "ASSASSIN") p.stats.AGI += 30;
-        else if(job === "MAGE") p.stats.INT += 30;
-        else p.stats.VIT += 30;
+    // --- MISSIONS ---
+function generateQuests() {
+    // 1. Calculate the Scaling Difficulty
+    const d = 10 + (p.level * 2);
 
-        document.getElementById('evolution-overlay').classList.add('hidden');
-        document.body.classList.remove('system-glitch');
+    // 2. Define the Pool
+    const pool = [
+        { s: 'STR', n: 'Push-ups', r: d },
+        { s: 'STR', n: 'Squats', r: d * 2 },
+        { s: 'STR', n: 'Jumping Squats', r: d * 2 },
+        { s: 'STR', n: 'Pull-ups', r: d * 2 },
+        { s: 'STR', n: 'Sit-ups', r: d * 2 },
+        { s: 'STR', n: 'Lunges', r: d * 2 },
+        { s: 'STR', n: 'Crunches', r: d * 2 },
+        { s: 'STR', n: 'Dips', r: d * 2 },
+        { s: 'AGI', n: 'Burpees', r: Math.floor(d/2) },
+        { s: 'AGI', n: 'High Knees', r: Math.floor(d/2) },
+        { s: 'AGI', n: 'Standing Run', r: Math.floor(d/2) },
+        { s: 'AGI', n: 'High jumps', r: Math.floor(d/2) },
+        { s: 'AGI', n: 'Jump rope', r: Math.floor(d/2) },
+        { s: 'AGI', n: 'Split jumps', r: Math.floor(d/2) },
+        { s: 'VIT', n: 'Cold Shower', r: '3 Minutes' },
+        { s: 'VIT', n: 'Fast walk', r: '3 Minutes' },
+        { s: 'VIT', n: 'Running/Cycling', r: '5KM' },
+        { s: 'VIT', n: 'Shadow Box', r: '3 Minutes' },
+        { s: 'INT', n: 'Deep Work', r: '40 Minutes' },
+        { s: 'INT', n: 'Play Chess', r: '40 Minutes' },
+        { s: 'INT', n: 'Learn new skill', r: '40 Minutes' },
+        { s: 'INT', n: 'Study', r: '40 Minutes' },
+        { s: 'INT', n: 'Knowledge', r: '40 Minutes' },
+        { s: 'FOC', n: 'No Phone', r: '1 Hour' },
+        { s: 'FOC', n: 'Meditate', r: '30 Minutes' },
+        { s: 'FOC', n: 'Box Breathing', r: '5 Minutes' },
+        { s: 'FOC', n: 'Thinking', r: '30 Minutes' },
+        { s: 'FOC', n: 'Book Reading', r: '30 Minutes' },
+        { s: 'FOC', n: 'Write about your day', r: '10 Minutes' }
+    ];
+
+    // 3. Shuffle and Select 5 Regular Missions
+    let selectedMissions = pool
+        .sort(() => 0.5 - Math.random())
+        .slice(0, 5)
+        .map((q, i) => ({ ...q, id: i, done: false, isSurprise: false }));
+
+    // 4. Inject Surprise Quest (Level 10-15 Only)
+    if (p.level >= 10 && p.level <= 15) {
+        const surprisePool = [
+            { s: 'STR', n: 'SURPRISE: Limit Breaker', r: '60 Push-ups' },
+            { s: 'VIT', n: 'SURPRISE: Iron Body', r: '5 Min Cold Shower' },
+            { s: 'AGI', n: 'SURPRISE: Shadow Step', r: '3KM Run' }
+        ];
+        
+        const randomSQ = surprisePool[Math.floor(Math.random() * surprisePool.length)];
+        
+        selectedMissions.push({
+            ...randomSQ,
+            id: 'sq_99',
+            done: false,
+            isSurprise: true
+        });
+    }
+
+    // 5. Save all at once to prevent UI glitches
+    p.missions = selectedMissions;
+    save();
+}
+
+    // Step 1: The Trigger (Asks the player)
+function completeMission(id) {
+    if (p.missions[id].done) return;
+    
+    playSfx('click');
+    
+    // Create the Confirmation Overlay
+    const confirmOverlay = document.createElement('div');
+    confirmOverlay.className = 'overlay';
+    confirmOverlay.id = 'confirm-overlay';
+    confirmOverlay.innerHTML = `
+        <div class="hologram">
+            <div style="color:var(--accent); font-family:'JetBrains Mono'; font-size:0.7rem;">[ MISSION COMPLETION ]</div>
+            <h2 style="margin:15px 0; font-weight:300;">Confirm Results?</h2>
+            <p style="font-size:0.8rem; color:#aaa;">Have you truly completed: <br><b>${p.missions[id].n}</b>?</p>
+            <div class="btn-group">
+                <button class="btn btn-confirm" onclick="executeMission(${id})">YES</button>
+                <button class="btn btn-cancel" onclick="this.parentElement.parentElement.parentElement.remove()">NO</button>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(confirmOverlay);
+}
+    
+function checkDailyCompletion() {
+    const regularMissions = p.missions.filter(m => !m.isSurprise);
+    const surpriseMission = p.missions.find(m => m.isSurprise);
+
+    const regularDone = regularMissions.every(m => m.done);
+
+    if (regularDone) {
+        // If regular quests are done but a Surprise Quest exists and is NOT done
+        if (surpriseMission && !surpriseMission.done) {
+            p.exp = Math.max(0, p.exp - 30); // Deduct 30 EXP
+            playSfx('alert');
+            showSystemMessage("PENALTY APPLIED", "Regular quests cleared, but Surprise Quest was ignored. <br><br>-30 EXP deducted.");
+        } else {
+            // Standard rewards for full completion
+            p.streak++;
+            showSystemMessage("QUEST CLEAR", "All missions completed successfully.");
+        }
         save();
         updateUI();
-        render('status');
     }
+}
 
     function gainExp(amount) {
-        p.exp += amount;
-        let goal = 100 + (p.level * 5);
-        while(p.exp >= goal) {
-            p.exp -= goal;
-            p.level++;
-            goal = 100 + (p.level * 5);
-            
-            if(p.level === 40 && p.job === "UNAWAKENED") {
-                triggerJobChange();
-            } else {
-                playSfx('levelUp');
+    if (!p) return;
+    
+    // 1. Add the EXP (Handles positive rewards and negative penalties)
+    p.exp += amount;
+    if (p.exp < 0) p.exp = 0; 
+
+    // 2. Define the goal formula (Must match updateUI)
+    let nextLevelGoal = 100 + (p.level * 5);
+
+    // 3. The Overflow Loop
+    // This runs as long as your EXP is higher than the requirement
+    while (p.exp >= nextLevelGoal) {
+        p.exp -= nextLevelGoal; // Subtract cost, keep the "extra"
+        p.level++;
+        
+        // Recalculate goal for the NEW level
+        nextLevelGoal = 100 + (p.level * 5);
+
+        // --- MILESTONE LOGIC ---
+        if (p.level === 5) {
+            playSfx('levelUp');
+            const bonuses = ["Blessed Box", "Rest Protocol", "Focus Token"];
+            bonuses.forEach(item => { p.cargo[item] = (p.cargo[item] || 0) + 1; });
+            showSystemMessage("MILESTONE 5", `Level 5 reached. Bonus rewards granted.`);
+        } 
+        else if (p.level === 10) {
+            document.body.classList.add('system-glitch');
+            playSfx('alert');
+            setTimeout(() => {
+                document.body.classList.remove('system-glitch');
+                showSystemMessage("SYSTEM OVERRIDE", `LEVEL 10: SURPRISE QUESTS UNLOCKED. Penalty active.`);
+            }, 1000);
+        } 
+        else {
+            playSfx('levelUp');
+            showSystemMessage("LEVEL UP", `Reached Level ${p.level}`);
+        }
+    }
+
+    // 4. Update the screen immediately
+    updateUI();
+}
+    
+
+// Step 2: The Execution (Gives rewards)
+async function executeMission(id) {
+    const confirmOverlay = document.getElementById('confirm-overlay');
+    if (confirmOverlay) confirmOverlay.remove();
+    
+    // --- 1. DYNAMIC EXP REWARD ---
+    let mission = p.missions[id] || p.missions.find(m => m.id === id);
+    let expGain = 10; // Base for INT/FOC/VIT
+
+    if (mission.s === 'STR' || mission.s === 'AGI') expGain = 15; // Physical bonus
+    if (mission.isSurprise) expGain = 30; // Surprise quest bonus
+    
+    // Apply rewards
+    mission.done = true;
+    p.stats[mission.s]++;
+    
+    // CALL THE CENTRAL FUNCTION INSTEAD OF MANUAL ADDITION
+    gainExp(expGain); 
+
+    // --- 2. PENALTY CHECK (Lv. 10-15 Logic) ---
+    const surpriseQuest = p.missions.find(m => m.isSurprise);
+    const regularMissions = p.missions.filter(m => !m.isSurprise);
+    const allRegularsDone = regularMissions.every(m => m.done);
+
+    if (p.level >= 10 && p.level <= 15 && allRegularsDone && surpriseQuest && !surpriseQuest.done) {
+        // Use a negative value in gainExp to handle the penalty correctly
+        gainExp(-30); 
+        playSfx('alert');
+        showSystemMessage("PENALTY", "Regular quests cleared, but Surprise Quest was ignored. <br><br><span style='color:var(--danger)'>-30 EXP Deducted.</span>");
+    }
+
+    // --- 3. DAILY CLEAR REWARD ---
+    if (p.missions.every(m => m.done)) {
+        p.streak++;
+        
+        const commonRewards = ["Rest Protocol", "Dopamine Hit", "Focus Token", "Physical Restoration", "Blessed Box"];
+        const rareRewards = ["Shadow Essence", "Warrior's Spirit", "Scholar's Scroll", "Elixir of Life"];
+        const legendaryRewards = ["System Key", "Elixir of Greatness"];
+
+        let pool = [...commonRewards];
+        if (p.level >= 20) pool.push(...rareRewards);
+        if (p.level >= 30) pool.push(...legendaryRewards);
+
+        const r = pool[Math.floor(Math.random() * pool.length)];
+        p.cargo[r] = (p.cargo[r] || 0) + 1;
+        
+        let color = "var(--accent)";
+        if (rareRewards.includes(r)) color = "#00ff95";
+        if (legendaryRewards.includes(r)) color = "#ffaa00";
+
+        showSystemMessage("QUEST CLEAR", `Daily tasks finalized. <br>Received: <span style="color:${color}">${r}</span>`);
+    }
+
+    // --- 4. LEVEL UP CHECK REMOVED ---
+    // (This is now handled automatically inside gainExp)
+
+    save(); 
+    updateUI(); 
+    render('mission');
+}
+    const itemEffects = {
+    "Rest Protocol": { desc: "Increases Vitality (VIT) by 5. Purple Grade.", run: () => { p.stats.VIT += 5; return "VIT increased by 5."; }},
+    "Dopamine Hit": { 
+        desc: "Grants 15 EXP.", 
+        run: () => { 
+            gainExp(15); // Calls the overflow logic
+            return "EXP increased by 15."; 
+        }
+    },
+    "Focus Token": { desc: "Increases Focus (FOC) by 5. Purple Grade.", run: () => { p.stats.FOC += 5; return "FOC increased by 5."; }},
+    "Physical Restoration": { desc: "Increases STR and AGI by 2. Purple Grade.", run: () => { p.stats.STR += 2; p.stats.AGI += 2; return "Physical stats restored."; }},
+    "Blessed Box": { desc: "Random +5 to any stat. Purple Grade.", run: () => { 
+        const keys = Object.keys(p.stats); const s = keys[Math.floor(Math.random()*keys.length)];
+        p.stats[s] += 5; return `Blessed! ${s} increased by 5.`; 
+    }},
+    "Shadow Essence": { desc: "Rare: AGI +5. Green Grade.", run: () => { p.stats.AGI += 5; return "AGI +5."; }},
+    "Warrior's Spirit": { desc: "Rare: STR +5. Green Grade.", run: () => { p.stats.STR += 5; return "STR +5."; }},
+    "Scholar's Scroll": { desc: "Rare: INT +5. Green Grade.", run: () => { p.stats.INT += 5; return "INT +5."; }},
+    "Elixir of Life": { 
+        desc: "Grants 50 EXP.", 
+        run: () => { 
+            gainExp(50); // Calls the overflow logic
+            return "EXP +50."; 
+        }
+    },
+    "Elixir of Greatness": { desc: "Legendary: ALL STATS +5. Gold Grade.", run: () => { 
+        Object.keys(p.stats).forEach(k => p.stats[k] += 5); return "All stats increased by 5."; 
+    }},
+    "System Key": { desc: "Legendary: Required for Job Change. [LVL 40]. Gold Grade", run: () => { 
+        if (p.level < 40) { p.cargo["System Key"]++; return "ACCESS DENIED: Insufficient Level."; }
+        p.job = "TRIAL IN PROGRESS"; return "JOB CHANGE PROTOCOL INITIATED.";
+    }}
+};
+
+function handleItemInteraction(itemName) {
+    const now = Date.now();
+    const effect = itemEffects[itemName];
+
+    if (now - lastTap < 300) {
+        // DOUBLE TAP -> CONSUME
+        consumeItem(itemName);
+        playSfx('consume');
+    } else {
+        // SINGLE TAP -> SHOW DEFINITION
+        // We use a small timeout to ensure we aren't about to double tap
+        setTimeout(() => {
+            if (Date.now() - lastTap >= 300) {
+                playSfx('click');
+                showSystemMessage(
+                    itemName.toUpperCase(), 
+                    `<span style="color:var(--accent)">EFFECT:</span><br>${effect.desc}<br><br><small>[ Double-tap to confirm consumption ]</small>`
+                );
             }
+        }, 305);
+    }
+    lastTap = now;
+}
+    
+function consumeItem(itemName) {
+    if (p.cargo[itemName] > 0) {
+        // Clear previous info boxes
+        const overlays = document.querySelectorAll('.overlay:not(#notice-overlay):not(#auth-overlay)');
+        overlays.forEach(el => el.remove());
+
+        p.cargo[itemName] -= 1;
+        const resultText = itemEffects[itemName].run(); // Calls the 'run' function
+        
+        showSystemMessage("ITEM CONSUMED", resultText);
+        
+        // Level up check
+        if (p.exp >= p.level * 100) {
+            p.level++; p.exp = 0;
+            playSfx('levelUp');
+            showSystemMessage("LEVEL UP", `Reached Level ${p.level}`);
         }
-        updateUI();
+        
         save();
+        updateUI();
+        render('cargo'); 
     }
+}
 
-    function updateUI() {
-        document.getElementById('lvl-display').innerText = p.level.toString().padStart(2, '0');
-        document.getElementById('job-display').innerText = p.job;
-        document.getElementById('streak-display').innerText = p.streak;
-        
-        const goal = 100 + (p.level * 5);
-        const perc = (p.exp / goal) * 100;
-        document.getElementById('exp-fill').style.width = perc + "%";
-        document.getElementById('exp-counter').innerText = `${p.exp} / ${goal} EXP`;
-        
-        // Rank logic
-        let rank = "E";
-        if(p.level >= 10) rank = "D";
-        if(p.level >= 20) rank = "C";
-        if(p.level >= 30) rank = "B";
-        if(p.level >= 40) rank = "A";
-        if(p.level >= 50) rank = "S";
-        document.getElementById('rank-display').innerText = `RANK: ${rank}`;
-    }
-
-    // --- RENDER CONTENT ---
+    // --- TAB RENDERING ---
     function render(tab) {
-        const cont = document.getElementById('main-content');
-        document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
-        document.getElementById('nav-' + tab).classList.add('active');
+    const cont = document.getElementById('main-content');
+    document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+    document.getElementById('nav-' + tab).classList.add('active');
+    if (timerId) clearInterval(timerId);
 
-        if(tab === 'status') {
-            cont.innerHTML = `<div class="chart-wrap"><canvas id="statsChart"></canvas></div>` + 
-                Object.entries(p.stats).map(([k,v]) => `
-                <div style="display:flex; justify-content:space-between; padding:15px; border-bottom:1px solid #111; font-family:'JetBrains Mono';">
-                    <span style="color:#777;">${k}</span>
-                    <span style="color:var(--accent); font-weight:bold;">${v}</span>
-                </div>`).join('');
-            initChart();
-        } else if(tab === 'mission') {
-            // Re-use your mission generation logic here
-            cont.innerHTML = `<button class="btn" onclick="gainExp(20)">Simulate Quest (+20 EXP)</button>
-                             <p style="text-align:center; font-size:0.7rem; opacity:0.5; margin-top:20px;">Reach Level 40 to trigger the System Job Analysis.</p>`;
-        }
-        // ... inventory and ranking logic from your code goes here
+    if (tab === 'status') {
+        const statColors = { STR: '#ff3e3e', AGI: '#00ff95', VIT: '#ffaa00', INT: '#bf00ff', FOC: '#00d4ff' };
+        cont.innerHTML = `<div class="chart-wrap"><canvas id="statsChart"></canvas></div>` + 
+            Object.entries(p.stats).map(([k,v]) => `
+            <div style="display:flex; justify-content:space-between; padding:15px; border-bottom:1px solid #111; font-family:'JetBrains Mono';">
+                <span style="color:#777;">${k}</span>
+                <span style="color:${statColors[k]}; font-weight:bold; text-shadow: 0 0 5px ${statColors[k]}55;">${v.toString().padStart(2,'0')}</span>
+            </div>`).join('');
+        initChart();
+    } else if (tab === 'mission') {
+        cont.innerHTML = `<div id="timer">00:00:00</div>` + p.missions.map(m => `
+            <div class="quest-card ${m.done ? 'done' : ''}" onclick="completeMission('${m.id}')">
+                <div><span class="quest-req">${m.s}</span><br><span class="quest-title">${m.n}</span></div>
+                <div class="quest-req">REQ: ${m.r}</div>
+            </div>`).join('');
+        timerId = setInterval(updateTimer, 1000); updateTimer();
+    } else if (tab === 'cargo') {
+        const hasItems = Object.entries(p.cargo).some(([n, c]) => c > 0);
+        if (!hasItems) { cont.innerHTML = `<div style="text-align:center; padding:50px; color:#444;">INVENTORY EMPTY</div>`; return; }
+
+        cont.innerHTML = `<div style="color:#bf00ff; font-size:0.6rem; text-align:center; margin-bottom:15px;">[ DOUBLE-TAP TO USE ]</div>` +
+            Object.entries(p.cargo).map(([name, count]) => {
+                if (count <= 0) return '';
+                let color = '#bf00ff'; // Purple
+                if (name === 'System Key' || name === 'Elixir of Greatness') color = '#ffaa00'; // Gold
+                else if (["Shadow Essence", "Warrior's Spirit", "Scholar's Scroll", "Elixir of Life"].includes(name)) color = '#00ff95'; // Green
+
+                return `
+                <div class="quest-card" onclick="handleItemInteraction('${name}')" style="border-color:${color}; box-shadow: 0 0 10px ${color}33;">
+                    <div>
+                        <span class="quest-title" style="color:${color}">${name}</span>
+                        <div style="font-size:0.5rem; color:#555; margin-top:4px;">${color==='#ffaa00'?'ARTIFACT':'SYSTEM REWARD'}</div>
+                    </div>
+                    <span style="color:${color}; font-size:1.2rem; font-family:'JetBrains Mono';">x${count}</span>
+                </div>`;
+            }).join('');
     }
+        // Add this inside your existing render(tab) function
+      else if (tab === 'ranking') {
+        cont.innerHTML = `
+            <div style="text-align:center; color:var(--accent); font-family:'JetBrains Mono'; font-size:0.7rem; margin-bottom:20px;">
+                [ GLOBAL HUNTER RANKINGS ]
+            </div>
+            <div id="leaderboard-display" class="lb-list">
+                <div style="text-align:center; padding:40px; color:#444;">SYNCING DATA...</div>
+            </div>
+        `;
+        fetchLeaderboard();
+    }
+}
 
     function initChart() {
         const ctx = document.getElementById('statsChart').getContext('2d');
@@ -310,11 +850,138 @@
                 }]
             },
             options: {
-                scales: { r: { grid: { color: 'rgba(255,255,255,0.05)' }, angleLines: { display: false }, ticks: { display: false }, suggestedMin: 0 } }
+                scales: {
+                    r: {
+                        grid: { color: 'rgba(255,255,255,0.05)' },
+                        angleLines: { color: 'rgba(255,255,255,0.05)' },
+                        pointLabels: { color: '#666', font: { family: 'JetBrains Mono', size: 11 } },
+                        ticks: { display: false },
+                        suggestedMin: 0
+                    }
+                },
+                plugins: { legend: { display: false } }
             }
         });
     }
 
+    function updateTimer() {
+        const el = document.getElementById('timer');
+        if(!el) return;
+        const end = new Date(); end.setHours(23,59,59,999);
+        const diff = end - new Date();
+        const h = Math.floor(diff/3600000).toString().padStart(2,'0');
+        const m = Math.floor((diff%3600000)/60000).toString().padStart(2,'0');
+        const s = Math.floor((diff%60000)/1000).toString().padStart(2,'0');
+        el.innerText = `${h}:${m}:${s}`;
+    }
+    
+    function showSystemMessage(title, body) {
+        playSfx('ping'); // <--- Add this line
+        const msg = document.createElement('div');
+        msg.className = 'overlay'; // Reuses your CSS overlay style
+        msg.innerHTML = `
+        <div class="hologram">
+            <div style="color:var(--accent); font-family:'JetBrains Mono'; font-size:0.7rem;">[ SYSTEM MESSAGE ]</div>
+            <h2 style="margin:15px 0; font-weight:300;">${title}</h2>
+            <p style="font-size:0.9rem; color:#aaa; margin-bottom:20px;">${body}</p>
+            <button class="btn" onclick="this.parentElement.parentElement.remove()">Confirm</button>
+        </div>
+    `;
+    document.body.appendChild(msg);
+}
+
+    function updateUI() {
+    if (!p) return; // Safety check for player object
+
+    // 1. CALCULATE CURRENT LEVEL GOAL
+    // Must match the gainExp formula exactly: 100 + (Level * 5)
+    const nextLvlExp = 100 + (p.level * 5); 
+    
+    // 2. UPDATE NUMERICAL DISPLAYS
+    const lvlDisplay = document.getElementById('lvl-display');
+    if (lvlDisplay) lvlDisplay.innerText = p.level.toString().padStart(2, '0');
+    
+    const streakDisplay = document.getElementById('streak-display');
+    if (streakDisplay) streakDisplay.innerText = p.streak;
+    
+    const jobDisplay = document.getElementById('job-display');
+    if (jobDisplay) jobDisplay.innerText = p.job;
+    
+    // 3. UPDATE RANK BASED ON LEVEL
+    const ranks = ['E','D','C','B','A','S'];
+    const rankIndex = Math.min(Math.floor(p.level/15), 5);
+    const rankDisplay = document.getElementById('rank-display');
+    if (rankDisplay) rankDisplay.innerText = "RANK: " + ranks[rankIndex];
+    
+    // 4. UPDATE EXP BAR WIDTH
+    // Math.min ensures the bar never visually "pops" out of its container
+    const expPercent = Math.min((p.exp / nextLvlExp) * 100, 100);
+    const expFill = document.getElementById('exp-fill');
+    if (expFill) {
+        expFill.style.width = expPercent + "%";
+    }
+    
+    // 5. UPDATE EXP COUNTER TEXT AND GLOW EFFECT
+    const counterEl = document.getElementById('exp-counter');
+    if (counterEl) {
+        counterEl.innerText = `${Math.floor(p.exp)} / ${nextLvlExp} EXP`;
+
+        if (expPercent > 80) {
+            counterEl.style.color = "var(--accent)";
+            counterEl.style.textShadow = "0 0 5px var(--accent)";
+        } else {
+            counterEl.style.color = "#555";
+            counterEl.style.textShadow = "none";
+        }
+    }
+}
+    function fetchLeaderboard() {
+    const lbDisplay = document.getElementById('leaderboard-display');
+    
+    // Querying 'hunters' collection by Level (Highest to Lowest)
+    db.collection('hunters')
+      .orderBy('level', 'desc')
+      .orderBy('exp', 'desc')
+      .limit(20)
+      .onSnapshot(snapshot => {
+          if (!document.getElementById('leaderboard-display')) return; // Exit if user switched tabs
+          
+          lbDisplay.innerHTML = "";
+          
+          snapshot.docs.forEach((doc, index) => {
+              const data = doc.data();
+              const isMe = auth.currentUser && auth.currentUser.uid === doc.id;
+              const rank = index + 1;
+
+              const item = document.createElement('div');
+              item.className = `lb-item ${isMe ? 'is-me' : ''}`;
+              item.innerHTML = `
+                  <div class="lb-rank">${rank.toString().padStart(2, '0')}</div>
+                  <div class="lb-info">
+                      <span class="name">${data.name || "UNKNOWN"} ${isMe ? '(YOU)' : ''}</span>
+                      <span class="job">${data.job || "UNAWAKENED"}</span>
+                  </div>
+                  <div class="lb-level">LVL ${data.level}</div>
+              `;
+              lbDisplay.appendChild(item);
+          });
+      }, error => {
+          console.error("Leaderboard Error:", error);
+          lbDisplay.innerHTML = `<div style="color:var(--danger); font-size:0.7rem;">FAILED TO SYNC RANKINGS. CHECK INDEXES.</div>`;
+      });
+}
 </script>
 </body>
 </html>
+
+
+
+
+
+
+
+
+
+
+
+
