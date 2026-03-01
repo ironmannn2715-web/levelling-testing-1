@@ -440,10 +440,12 @@ function playSfx(type) {
             p = doc.data();
             checkSystemDay();
         } else {
-            p = {
-                name: user.displayName, level: 1, exp: 0, streak: 0, job: "UNAWAKENED",
-                stats: { STR: 10, AGI: 10, VIT: 10, INT: 10, FOC: 10 },
-                cargo: {}, missions: [], lastUpdate: new Date().toDateString()
+            p = JSON.parse(localStorage.getItem('hunterData')) || {
+                level: 1,
+                exp: 0,
+                job: "Unawakened", // Start as Unawakened
+                stats: { STR: 10, VIT: 10, INT: 10, AGI: 10, FOC: 10 },
+                cargo: {}
             };
             await docRef.set(p);
         }
@@ -893,6 +895,12 @@ function consumeItem(itemName) {
 
     function updateUI() {
     if (!p) return; // Safety check for player object
+    // This line ensures the display always shows what is in the 'p' object
+    const jobDisplay = document.getElementById('job-display');
+    if (jobDisplay) {
+        // If p.job exists, show it; otherwise show 'Unawakened'
+        jobDisplay.innerText = p.job || "Unawakened"; 
+    }
 
     // 1. CALCULATE CURRENT LEVEL GOAL
     // Must match the gainExp formula exactly: 100 + (Level * 5)
