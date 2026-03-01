@@ -617,7 +617,15 @@ function checkDailyCompletion() {
             const bonuses = ["Blessed Box", "Rest Protocol", "Focus Token"];
             bonuses.forEach(item => { p.cargo[item] = (p.cargo[item] || 0) + 1; });
             showSystemMessage("MILESTONE 5", `Level 5 reached. Bonus rewards granted.`);
-        } 
+        }
+        else if (p.level >= 40 && (p.job === "None" || p.job === "Beginner Hunter")) {
+        // Save to Firebase/LocalStorage before leaving so progress isn't lost
+        if (typeof save === 'function') save(); 
+        
+        // Immediate redirection
+        window.location.href = "job-change.html"; 
+        return; // Stop the rest of the loop
+    }
         else if (p.level === 10) {
             document.body.classList.add('system-glitch');
             playSfx('alert');
