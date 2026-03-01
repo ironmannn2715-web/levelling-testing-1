@@ -728,17 +728,23 @@ async function executeMission(id) {
     desc: "Legendary: Required for Job Change. [LVL 40]. Gold Grade", 
     run: () => { 
         if (p.level < 40) { 
-            // Put the key back since it couldn't be used
+            // Return the key if level is too low
             p.cargo["System Key"] = (p.cargo["System Key"] || 0) + 1; 
             return "<span style='color:var(--danger)'>ACCESS DENIED: Required Level 40.</span>"; 
         }
         
-        // If level 40+, start the Job Quest Analysis
+        // This is the trigger: 
+        // We wait 1.5 seconds so you can read the message, then the screen changes.
         setTimeout(() => {
+            // Force close any open message boxes first
+            const overlays = document.querySelectorAll('.overlay:not(#evolution-overlay):not(#main-nav)');
+            overlays.forEach(el => { if(!el.id.includes('evolution')) el.remove(); });
+            
+            // Launch the actual evolution sequence
             triggerJobChange(); 
-        }, 500);
+        }, 1500); 
         
-        return "JOB CHANGE PROTOCOL INITIATED. ANALYZING PLAYER..."; 
+        return "JOB CHANGE PROTOCOL INITIATED. <br>Preparing System Analysis..."; 
     }
 }
 };
