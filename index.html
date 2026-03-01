@@ -724,11 +724,92 @@ async function executeMission(id) {
     "Elixir of Greatness": { desc: "Legendary: ALL STATS +5. Gold Grade.", run: () => { 
         Object.keys(p.stats).forEach(k => p.stats[k] += 5); return "All stats increased by 5."; 
     }},
-    "System Key": { desc: "Legendary: Required for Job Change. [LVL 40]. Gold Grade", run: () => { 
-        if (p.level < 40) { p.cargo["System Key"]++; return "ACCESS DENIED: Insufficient Level."; }
-        p.job = "TRIAL IN PROGRESS"; return "JOB CHANGE PROTOCOL INITIATED.";
-    }}
+    "System Key": { 
+    desc: "Legendary: Required for Job Change. [LVL 40]. Gold Grade", 
+    run: () => { 
+        if (p.level < 40) { 
+            // Put the key back since it couldn't be used
+            p.cargo["System Key"] = (p.cargo["System Key"] || 0) + 1; 
+            return "<span style='color:var(--danger)'>ACCESS DENIED: Required Level 40.</span>"; 
+        }
+        
+        // If level 40+, start the Job Quest Analysis
+        setTimeout(() => {
+            triggerJobChange(); 
+        }, 500);
+        
+        return "JOB CHANGE PROTOCOL INITIATED. ANALYZING PLAYER..."; 
+    }
+}
 };
+    function triggerJobChange() {
+    // 1. Show the Evolution UI
+    const overlay = document.getElementById('evolution-overlay');
+    const bar = document.getElementById('evo-bar-fill');
+    
+    overlay.classList.remove('hidden');
+    playSfx('alert');
+
+    // 2. Animate the System Bar
+    setTimeout(() => { bar.style.width = "100%"; }, 100);
+
+    // 3. The System Decides (After 3 seconds)
+    setTimeout(() => {
+        const s = p.stats;
+        const max = Math.max(s.STR, s.AGI, s.INT, s.VIT, s.FOC);
+        let finalJob = { name: "WARRIOR", bonus: "STR +30" };
+
+        // --- THE HIDDEN CLASS (Solo Leveling Style) ---
+        // If you are balanced and strong, you get the Monarch
+        if(s.STR >= 45 && s.AGI >= 45 && s.INT >= 45 && s.VIT >= 45) {
+            finalJob = { name: "SHADOW MONARCH", bonus: "ALL STATS +50" };
+        } 
+        // --- THE STANDARD CLASSES ---
+        else if(s.STR === max) finalJob = { name: "FIGHTER", bonus: "STR +30" };
+        else if(s.AGI === max) finalJob = { name: "ASSASSIN", bonus: "AGI +30" };
+        else if(s.INT === max) finalJob = { name: "MAGE", bonus: "INT +30" };
+        else if(s.VIT === max) finalJob = { name: "TANKER", bonus: "VIT +30" };
+        else if(s.FOC === max) finalJob = { name: "ARCHER", bonus: "FOC +30" };
+
+        // 4. Reveal to Player
+        document.getElementById('evo-loading').classList.add('hidden');
+        document.getElementById('evo-result').classList.remove('hidden');
+        
+        const jobTitle = document.getElementById('revealed-job');
+        jobTitle.innerText = finalJob.name;
+        document.getElementById('job-reward-desc').innerText = `REWARD: ${finalJob.bonus}`;
+        
+        if(finalJob.name === "SHADOW MONARCH") {
+            jobTitle.style.color = "#ff00ff";
+            jobTitle.style.textShadow = "0 0 20px #ff00ff";
+            document.body.classList.add('system-glitch');
+        }
+        
+        playSfx('levelUp');
+    }, 3500);
+}
+    function confirmJobChange() {
+    const jobName = document.getElementById('revealed-job').innerText;
+    p.job = jobName;
+    
+    // Apply the permanent stat rewards
+    if(jobName === "SHADOW MONARCH") {
+        Object.keys(p.stats).forEach(k => p.stats[k] += 50);
+    } else if(jobName === "FIGHTER") p.stats.STR += 30;
+    else if(jobName === "ASSASSIN") p.stats.AGI += 30;
+    else if(jobName === "MAGE") p.stats.INT += 30;
+    else if(jobName === "TANKER") p.stats.VIT += 30;
+    else if(jobName === "ARCHER") p.stats.FOC += 30;
+
+    // Close and Update
+    document.getElementById('evolution-overlay').classList.add('hidden');
+    document.body.classList.remove('system-glitch');
+    
+    showSystemMessage("EVOLUTION COMPLETE", `You have become the ${jobName}.`);
+    updateUI();
+    save();
+    render('status'); // Refresh chart
+}
 
 function handleItemInteraction(itemName) {
     const now = Date.now();
