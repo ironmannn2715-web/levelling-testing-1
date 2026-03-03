@@ -168,6 +168,39 @@
             color: var(--accent); 
             text-shadow: 0 0 10px rgba(0,212,255,0.4);
         }
+        .ranking-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 15px;
+    font-size: 0.8rem;
+}
+
+.ranking-table th {
+    text-align: left;
+    color: #444;
+    padding: 10px;
+    border-bottom: 1px solid #222;
+    font-size: 0.6rem;
+    letter-spacing: 1px;
+}
+
+.ranking-table td {
+    padding: 12px 10px;
+    border-bottom: 1px solid #111;
+}
+
+.player-row {
+    background: rgba(0, 255, 255, 0.05);
+    border-left: 2px solid var(--accent);
+}
+
+.ranking-header {
+    color: var(--accent);
+    font-weight: bold;
+    letter-spacing: 2px;
+    margin-bottom: 10px;
+    text-shadow: 0 0 10px rgba(0,255,255,0.3);
+}
 
         /* Mobile-First Navigation */
         nav {
@@ -833,7 +866,59 @@ function consumeItem(itemName) {
             </div>
         `;
         fetchLeaderboard();
+        renderRanking();
     }
+}
+function renderRanking() {
+    const cont = document.getElementById('main-content');
+    
+    // 1. Simulate NPC Movement (Randomly shift NPC levels slightly)
+    // This makes the 'Trend' actually change!
+    npcs.forEach(n => {
+        n.prevRank = n.currentRank || 0; // Store old rank
+        n.score = n.lvl + (Math.random() * 5); // Add a 'noise' factor for ranking
+    });
+
+    // 2. Sort the list by score
+    const sortedHunters = [...npcs, { name: p.name, lvl: p.level, isPlayer: true, score: p.level }]
+        .sort((a, b) => b.score - a.score);
+
+    // 3. Build the Table
+    let html = `
+        <div class="ranking-header">[ WORLD RANKINGS ]</div>
+        <table class="ranking-table">
+            <thead>
+                <tr>
+                    <th>RANK</th>
+                    <th>TREND</th>
+                    <th>HUNTER</th>
+                    <th>LEVEL</th>
+                </tr>
+            </thead>
+            <tbody>`;
+
+    sortedHunters.forEach((h, index) => {
+        const currentRank = index + 1;
+        let trendHTML = '<span style="color:#555">—</span>'; // Default Steady
+
+        // logic for trend
+        if (h.prevRank) {
+            if (currentRank < h.prevRank) trendHTML = '<span style="color:var(--success)">▲</span>';
+            else if (currentRank > h.prevRank) trendHTML = '<span style="color:var(--danger)">▼</span>';
+        }
+        h.currentRank = currentRank; // Save for next render
+
+        html += `
+            <tr class="${h.isPlayer ? 'player-row' : ''}">
+                <td>#${currentRank}</td>
+                <td style="text-align:center;">${trendHTML}</td>
+                <td style="color:${h.isPlayer ? 'var(--accent)' : '#fff'}">${h.name}</td>
+                <td>LVL ${Math.floor(h.lvl)}</td>
+            </tr>`;
+    });
+
+    html += `</tbody></table>`;
+    cont.innerHTML = html;
 }
 
     function initChart() {
