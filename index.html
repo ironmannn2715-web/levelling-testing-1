@@ -501,11 +501,13 @@ function playSfx(type) {
     }
 
     // 4. Independent Job Theme Check (This must be its own 'if')
-    if (p.job !== "UNAWAKENED") {
+    // Set the theme based on the SAVED job status
+    if (p.job && p.job !== "UNAWAKENED") {
         document.documentElement.classList.add('awakened-system');
+    } else {
+        document.documentElement.classList.remove('awakened-system');
     }
 
-    // 5. Finalize UI
     updateUI();
     render('status');
 }
@@ -775,16 +777,20 @@ async function executeMission(id) {
         Object.keys(p.stats).forEach(k => p.stats[k] += 5); return "All stats increased by 5."; 
     }},
     // Replace lines 632-635
-"System Key": { 
-    desc: "Legendary: Required for Job Change. [LVL 40]. Gold Grade", 
-    run: () => {
-        if (p.level < 40) { 
-            return "ACCESS DENIED: Insufficient Level. (Current: " + p.level + "/40)"; 
+    "System Key": { 
+        desc: "Legendary: Required for Job Change. [LVL 40]. Gold Grade", 
+        run: () => {
+            if (p.level < 40) { 
+                // 1. Give the key back immediately because it wasn't "used"
+                p.cargo["System Key"] = (p.cargo["System Key"] || 0) + 1; 
+                return "ACCESS DENIED: Insufficient Level. (Min: 40)"; 
+            }
+            
+            // 2. Only start the quest if level is 40+
+            triggerJobChange(); 
+            return "JOB CHANGE PROTOCOL INITIATED.";
         }
-        triggerJobChange(); 
-        return "JOB CHANGE PROTOCOL INITIATED.";
     }
-}
 };
 
 function handleItemInteraction(itemName) {
@@ -834,55 +840,48 @@ function consumeItem(itemName) {
         render('cargo'); 
     }
 }
-    function triggerJobChange() {
+function triggerJobChange() {
     const overlay = document.getElementById('evolution-overlay');
     const bar = document.getElementById('evo-bar-fill');
-    const loading = document.getElementById('evo-loading');
-    const result = document.getElementById('evo-result');
-
+    
+    // IMPORTANT: Reset bar and show overlay
+    bar.style.width = '0%';
     overlay.classList.remove('hidden');
-    loading.classList.remove('hidden');
-    result.classList.add('hidden');
-    
-    playSfx('alert');
-    
-    // Animation of the Analysis Bar
+    document.getElementById('evo-loading').classList.remove('hidden');
+    document.getElementById('evo-result').classList.add('hidden');
+
+    // Start the loading animation
     setTimeout(() => { bar.style.width = '100%'; }, 100);
 
-    // After 3 seconds of "System Analysis"
     setTimeout(() => {
-        loading.classList.add('hidden');
-        result.classList.remove('hidden');
+        document.getElementById('evo-loading').classList.add('hidden');
+        document.getElementById('evo-result').classList.remove('hidden');
         
-        // Automated Job Assignment Logic
-        let job = "ASSASSIN"; // Default
-        if (p.stats.STR > p.stats.INT && p.stats.STR > p.stats.AGI) job = "TANKER";
-        else if (p.stats.INT > p.stats.STR) job = "MAGE";
-        else if (p.stats.AGI > p.stats.STR) job = "SHADOW MONARCH";
+        // Automated Assignment based on stats
+        let job = "ASSASSIN";
+        if (p.stats.INT > 25) job = "MAGE";
+        else if (p.stats.STR > 25) job = "TANKER";
+        else if (p.stats.AGI > 25) job = "SHADOW MONARCH";
         
         document.getElementById('revealed-job').innerText = job;
-        p.tempJob = job; // Store temporarily until player confirms
-        playSfx('levelUp');
+        p.tempJob = job; // Keep it temporary for now
     }, 3100);
 }
 
 function confirmJobChange() {
-    // 1. Assign Job and Clear Temp
+    // ONLY change the color here, after they click 'Accept'
     p.job = p.tempJob;
     delete p.tempJob;
     
-    // 2. Change Interface Color to Purple
+    // Apply the Purple Theme
     document.documentElement.classList.add('awakened-system');
     
-    // 3. Close Overlay and Update UI
+    // Close overlay
     document.getElementById('evolution-overlay').classList.add('hidden');
-    
-    showSystemMessage("EVOLUTION SUCCESSFUL", `You have Awakened as: ${p.job}`);
     
     save();
     updateUI();
 }
-
     // --- TAB RENDERING ---
     function render(tab) {
     const cont = document.getElementById('main-content');
