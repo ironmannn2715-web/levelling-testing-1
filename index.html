@@ -34,7 +34,6 @@
             display: flex; 
             justify-content: center; 
         }
-        
 
         .app-container {
             width: 100%;
@@ -275,26 +274,6 @@
     letter-spacing: 2px;
     font-weight: 700;
 }
-/* Insert before line 286 */
-.awakened-system {
-    --accent: #bf00ff !important; /* System Purple */
-    --bg: #0a0510 !important;
-}
-
-#evolution-overlay {
-    z-index: 10000;
-    background: rgba(0, 0, 0, 0.98);
-}
-
-#evo-bar-fill {
-    box-shadow: 0 0 15px var(--accent);
-}
-
-@keyframes pulse-purple {
-    0% { box-shadow: 0 0 5px #bf00ff; }
-    50% { box-shadow: 0 0 20px #bf00ff; }
-    100% { box-shadow: 0 0 5px #bf00ff; }
-}
 
 #job-display {
     font-size: 0.75rem !important; /* Increased from 0.5rem */
@@ -355,21 +334,6 @@
             <button class="btn" onclick="showAuth()">Initialize Link</button>
         </div>
     </div>
-    <div id="evolution-overlay" class="overlay hidden">
-    <div id="evo-loading" class="hologram">
-        <div style="color:var(--accent); font-family:'JetBrains Mono'; font-size:0.7rem; margin-bottom:15px;">[ SYSTEM ANALYSIS ]</div>
-        <h2 style="font-weight:300;">EVALUATING PLAYER...</h2>
-        <div style="width:100%; height:2px; background: #111; margin-top:20px;">
-            <div id="evo-bar-fill" style="width:0%; height:100%; background:var(--accent); transition: 3s linear;"></div>
-        </div>
-    </div>
-    <div id="evo-result" class="hologram hidden">
-        <div style="color:var(--accent); font-family:'JetBrains Mono'; font-size:0.7rem; margin-bottom:15px;">[ EVOLUTION COMPLETE ]</div>
-        <p>Based on your performance, your new Job is:</p>
-        <h1 id="revealed-job" style="color:var(--accent); letter-spacing:5px; margin: 20px 0;">---</h1>
-        <button class="btn" onclick="confirmJobChange()">Accept Evolution</button>
-    </div>
-    </div>
 
     <div id="auth-overlay" class="overlay hidden">
         <div class="hologram">
@@ -403,6 +367,25 @@
     <button onclick="render('ranking')" id="nav-ranking">RANKING</button> 
     <button onclick="render('cargo')" id="nav-cargo">INVENTORY</button>
 </nav>
+<div id="evolution-overlay" class="overlay hidden" style="z-index: 10000; background: rgba(0,0,0,0.98);">
+    <div id="evo-loading" class="hologram">
+        <div style="color:var(--accent); font-family:'JetBrains Mono'; font-size:0.7rem; margin-bottom:15px;">[ SYSTEM ANALYSIS ]</div>
+        <h2 style="font-weight:300;">EVALUATING PLAYER STATS...</h2>
+        <div style="width:200px; height:2px; background: #111; margin-top:20px; overflow:hidden;">
+            <div id="evo-bar-fill" style="width:0%; height:100%; background:var(--accent); transition: 3s linear;"></div>
+        </div>
+    </div>
+    
+    <div id="evo-result" class="hologram hidden">
+        <div style="color:var(--accent); font-family:'JetBrains Mono'; font-size:0.7rem; margin-bottom:15px;">[ ANALYSIS COMPLETE ]</div>
+        <p>The System has determined a suitable job:</p>
+        <h1 id="revealed-job" style="color:var(--accent); letter-spacing:5px; margin: 20px 0; text-transform: uppercase;">---</h1>
+        <div style="display:flex; gap:10px; justify-content:center;">
+            <button class="btn" onclick="confirmJobChange(true)">ACCEPT EVOLUTION</button>
+            <button class="btn" style="background:#222; border-color:#444;" onclick="confirmJobChange(false)">REFUSE</button>
+        </div>
+    </div>
+</div>
 </div>
 
 <script>
@@ -434,14 +417,12 @@ function playSfx(type) {
 }
     // --- FIREBASE CONFIG ---
     const firebaseConfig = {
-        apiKey: "AIzaSyBBRAVqR1ZqthOmcYs9rxJULe7_w9AumJ4",
-          authDomain: "levelling-faa1b.firebaseapp.com",
-          projectId: "levelling-faa1b",
-          storageBucket: "levelling-faa1b.firebasestorage.app",
-          messagingSenderId: "586212668823",
-          appId: "1:586212668823:web:12eac7b3e53e4c840e40d2",
-          measurementId: "G-CZCSHWJD5E"
-        
+        apiKey: "AIzaSyBBveJmrWxVnnalA34G7KZR6COhrOcxiok",
+        authDomain: "solo-levelling-system-5edae.firebaseapp.com",
+        projectId: "solo-levelling-system-5edae",
+        storageBucket: "solo-levelling-system-5edae.firebasestorage.app",
+        messagingSenderId: "800420338485",
+        appId: "1:800420338485:web:faa95b0a692fe9abb8ca7c"
     };
 
     firebase.initializeApp(firebaseConfig);
@@ -488,29 +469,13 @@ function playSfx(type) {
     }
 
     function boot() {
-    // 1. Hide entry overlays and show main game UI
-    document.querySelectorAll('.overlay').forEach(el => el.classList.add('hidden'));
-    document.querySelectorAll('header, nav, #main-content').forEach(el => el.classList.remove('hidden'));
-    
-    // 2. Set Player Name
-    document.getElementById('disp-name').innerText = p.name.toUpperCase();
-    
-    // 3. Independent Quest Check
-    if (!p.missions || p.missions.length === 0) {
-        generateQuests();
+        document.querySelectorAll('.overlay').forEach(el => el.classList.add('hidden'));
+        document.querySelectorAll('header, nav, #main-content').forEach(el => el.classList.remove('hidden'));
+        document.getElementById('disp-name').innerText = p.name.toUpperCase();
+        if (!p.missions || p.missions.length === 0) generateQuests();
+        updateUI();
+        render('status');
     }
-
-    // 4. Independent Job Theme Check (This must be its own 'if')
-    // Set the theme based on the SAVED job status
-    if (p.job && p.job !== "UNAWAKENED") {
-        document.documentElement.classList.add('awakened-system');
-    } else {
-        document.documentElement.classList.remove('awakened-system');
-    }
-
-    updateUI();
-    render('status');
-}
 
     function save() { 
         if(auth.currentUser) db.collection('hunters').doc(auth.currentUser.uid).update(p); 
@@ -776,21 +741,20 @@ async function executeMission(id) {
     "Elixir of Greatness": { desc: "Legendary: ALL STATS +5. Gold Grade.", run: () => { 
         Object.keys(p.stats).forEach(k => p.stats[k] += 5); return "All stats increased by 5."; 
     }},
-    // Replace lines 632-635
     "System Key": { 
-        desc: "Legendary: Required for Job Change. [LVL 40]. Gold Grade", 
-        run: () => {
-            if (p.level < 40) { 
-                // 1. Give the key back immediately because it wasn't "used"
-                p.cargo["System Key"] = (p.cargo["System Key"] || 0) + 1; 
-                return "ACCESS DENIED: Insufficient Level. (Min: 40)"; 
-            }
-            
-            // 2. Only start the quest if level is 40+
-            triggerJobChange(); 
-            return "JOB CHANGE PROTOCOL INITIATED.";
+    desc: "Legendary: Required for Job Change. [LVL 40]", 
+    run: () => {
+        if (Number(p.level) < 40) { 
+            // Return the key to inventory immediately
+            p.cargo["System Key"] = (p.cargo["System Key"] || 0) + 1; 
+            return "ACCESS DENIED: Insufficient Level. Requirement: 40"; 
         }
+        
+        // Start the quest
+        startJobQuest(); 
+        return "SYSTEM: Job Change Protocol Initiated.";
     }
+}
 };
 
 function handleItemInteraction(itemName) {
@@ -840,48 +804,7 @@ function consumeItem(itemName) {
         render('cargo'); 
     }
 }
-function triggerJobChange() {
-    const overlay = document.getElementById('evolution-overlay');
-    const bar = document.getElementById('evo-bar-fill');
-    
-    // IMPORTANT: Reset bar and show overlay
-    bar.style.width = '0%';
-    overlay.classList.remove('hidden');
-    document.getElementById('evo-loading').classList.remove('hidden');
-    document.getElementById('evo-result').classList.add('hidden');
 
-    // Start the loading animation
-    setTimeout(() => { bar.style.width = '100%'; }, 100);
-
-    setTimeout(() => {
-        document.getElementById('evo-loading').classList.add('hidden');
-        document.getElementById('evo-result').classList.remove('hidden');
-        
-        // Automated Assignment based on stats
-        let job = "ASSASSIN";
-        if (p.stats.INT > 25) job = "MAGE";
-        else if (p.stats.STR > 25) job = "TANKER";
-        else if (p.stats.AGI > 25) job = "SHADOW MONARCH";
-        
-        document.getElementById('revealed-job').innerText = job;
-        p.tempJob = job; // Keep it temporary for now
-    }, 3100);
-}
-
-function confirmJobChange() {
-    // ONLY change the color here, after they click 'Accept'
-    p.job = p.tempJob;
-    delete p.tempJob;
-    
-    // Apply the Purple Theme
-    document.documentElement.classList.add('awakened-system');
-    
-    // Close overlay
-    document.getElementById('evolution-overlay').classList.add('hidden');
-    
-    save();
-    updateUI();
-}
     // --- TAB RENDERING ---
     function render(tab) {
     const cont = document.getElementById('main-content');
@@ -1076,7 +999,72 @@ function confirmJobChange() {
           lbDisplay.innerHTML = `<div style="color:var(--danger); font-size:0.7rem;">FAILED TO SYNC RANKINGS. CHECK INDEXES.</div>`;
       });
 }
+function startJobQuest() {
+    const overlay = document.getElementById('evolution-overlay');
+    const bar = document.getElementById('evo-bar-fill');
+    
+    overlay.classList.remove('hidden');
+    document.getElementById('evo-loading').classList.remove('hidden');
+    document.getElementById('evo-result').classList.add('hidden');
+    
+    // Animate the analysis bar
+    setTimeout(() => { bar.style.width = '100%'; }, 100);
+
+    setTimeout(() => {
+        document.getElementById('evo-loading').classList.add('hidden');
+        document.getElementById('evo-result').classList.remove('hidden');
+        
+        // --- AUTOMATIC ANALYSIS ---
+        // Determines job based on highest stat
+        const stats = p.stats;
+        let job = "ASSASSIN"; // Default if AGI is high
+        
+        if (stats.INT > stats.STR && stats.INT > stats.AGI) {
+            job = "MAGE";
+        } else if (stats.STR > stats.AGI) {
+            job = "TANKER";
+        } else if (stats.AGI > stats.STR) {
+            job = "SHADOW MONARCH";
+        }
+        
+        document.getElementById('revealed-job').innerText = job;
+        p.pendingJob = job; // Store it but don't apply it yet
+    }, 3200);
+}
+
+function confirmJobChange(accepted) {
+    const overlay = document.getElementById('evolution-overlay');
+    
+    if (accepted) {
+        // Change the job name
+        p.job = p.pendingJob; 
+        showSystemMessage("SUCCESS", `You have evolved into a ${p.job}!`);
+    } else {
+        // No changes occur
+        showSystemMessage("SYSTEM", "Evolution refused. Job remains UNAWAKENED.");
+    }
+    
+    // Cleanup
+    delete p.pendingJob;
+    overlay.classList.add('hidden');
+    document.getElementById('evo-bar-fill').style.width = '0%';
+    
+    save();
+    updateUI();
+}
 </script>
 </body>
 </html>
+
+
+
+
+
+
+
+
+
+
+
+
 
