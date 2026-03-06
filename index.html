@@ -823,7 +823,8 @@ function consumeItem(itemName) {
             </div>`).join('');
         initChart();
     } else if (tab === 'mission') {
-        cont.innerHTML = `<div id="timer">00:00:00</div>` + p.missions.map(m => `
+        cont.innerHTML = `<div id="timer">24:00:00</div>
+        <div id="current-date-display"></div>` + p.missions.map(m => `
             <div class="quest-card ${m.done ? 'done' : ''}" onclick="completeMission('${m.id}')">
                 <div><span class="quest-req">${m.s}</span><br><span class="quest-title">${m.n}</span></div>
                 <div class="quest-req">REQ: ${m.r}</div>
@@ -903,7 +904,19 @@ function consumeItem(itemName) {
         const m = Math.floor((diff%3600000)/60000).toString().padStart(2,'0');
         const s = Math.floor((diff%60000)/1000).toString().padStart(2,'0');
         el.innerText = `${h}:${m}:${s}`;
-    }
+        const now = new Date();
+        const dateString = now.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+        
+        // Target the element below your timer (ensure you have this ID in your HTML)
+        const dateEl = document.getElementById('current-date-display');
+        if (dateEl) {
+            dateEl.innerText = dateString;
+            dateEl.style.fontSize = "0.65rem"; // Small size
+            dateEl.style.opacity = "0.5";      // Subdued look
+            dateEl.style.marginTop = "2px";
+        }
+}
+
     
     function showSystemMessage(title, body) {
         playSfx('ping'); // <--- Add this line
