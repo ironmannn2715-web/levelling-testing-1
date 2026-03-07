@@ -139,75 +139,12 @@
             padding: 20px 25px 120px; /* Space for Nav */
             -webkit-overflow-scrolling: touch;
         }
-        .calendar-wrapper {
-    margin-top: 25px;
-    padding: 10px;
-    background: rgba(0, 0, 0, 0.2);
-    border: 1px solid #222;
-}
-
-.calendar-header {
-    display: flex;
-    justify-content: space-between;
-    font-size: 0.6rem;
-    color: var(--accent);
-    margin-bottom: 10px;
-    font-family: 'JetBrains Mono';
-}
-
-.heatmap-grid {
-    display: grid;
-    grid-template-columns: repeat(7, 1fr);
-    gap: 3px;
-}
-
-.day-box {
-    aspect-ratio: 1/1;
-    background: #111;
-    border: 1px solid #222;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 0.5rem;
-    color: #444;
-}
-
-.day-box.success { background: #15ff0022; border-color: #15ff00; color: #15ff00; }
-.day-box.fail { background: #ff000022; border-color: #ff0000; color: #ff0000; }
-.day-box.today { border-color: var(--accent); box-shadow: inset 0 0 5px var(--accent); }
-
-.calendar-legend {
-    display: flex;
-    gap: 10px;
-    margin-top: 10px;
-    font-size: 0.5rem;
-    opacity: 0.6;
-}
-.legend-item { display: flex; align-items: center; gap: 4px; }
-.legend-item .day-box { width: 8px; height: 8px; }
 
         /* Stats & Pentagraph */
         .chart-wrap { 
             width: 100%; 
             max-width: 300px; 
             margin: 0 auto 25px; 
-        }
-
-        .stat-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 10px 0;
-            border-bottom: 1px solid rgba(255,255,255,0.05);
-        }
-
-        .section-title {
-            color: var(--accent);
-            font-family: 'JetBrains Mono';
-            font-size: 0.7rem;
-            text-align: center;
-            margin-bottom: 20px;
-            letter-spacing: 2px;
         }
 
         .quest-card {
@@ -329,13 +266,6 @@
     display: block;
     margin-bottom: 4px;
 }
-#current-date-display {
-    font-size: 0.65rem;
-    opacity: 0.5;
-    margin-top: 4px;
-    letter-spacing: 1px;
-    font-family: 'JetBrains Mono', monospace;
-}
 
 .rank-box { 
     font-family: 'JetBrains Mono'; 
@@ -437,25 +367,6 @@
     <button onclick="render('ranking')" id="nav-ranking">RANKING</button> 
     <button onclick="render('cargo')" id="nav-cargo">INVENTORY</button>
 </nav>
-<div id="evolution-overlay" class="overlay hidden" style="z-index: 10000; background: rgba(0,0,0,0.98);">
-    <div id="evo-loading" class="hologram">
-        <div style="color:var(--accent); font-family:'JetBrains Mono'; font-size:0.7rem; margin-bottom:15px;">[ SYSTEM ANALYSIS ]</div>
-        <h2 style="font-weight:300;">EVALUATING PLAYER STATS...</h2>
-        <div style="width:200px; height:2px; background: #111; margin-top:20px; overflow:hidden;">
-            <div id="evo-bar-fill" style="width:0%; height:100%; background:var(--accent); transition: 3s linear;"></div>
-        </div>
-    </div>
-    
-    <div id="evo-result" class="hologram hidden">
-        <div style="color:var(--accent); font-family:'JetBrains Mono'; font-size:0.7rem; margin-bottom:15px;">[ ANALYSIS COMPLETE ]</div>
-        <p>The System has determined a suitable job:</p>
-        <h1 id="revealed-job" style="color:var(--accent); letter-spacing:5px; margin: 20px 0; text-transform: uppercase;">---</h1>
-        <div style="display:flex; gap:10px; justify-content:center;">
-            <button class="btn" onclick="confirmJobChange(true)">ACCEPT EVOLUTION</button>
-            <button class="btn" style="background:#222; border-color:#444;" onclick="confirmJobChange(false)">REFUSE</button>
-        </div>
-    </div>
-</div>
 </div>
 
 <script>
@@ -487,13 +398,12 @@ function playSfx(type) {
 }
     // --- FIREBASE CONFIG ---
     const firebaseConfig = {
-        apiKey: "AIzaSyBBRAVqR1ZqthOmcYs9rxJULe7_w9AumJ4",
-        authDomain: "levelling-faa1b.firebaseapp.com",
-        projectId: "levelling-faa1b",
-        storageBucket: "levelling-faa1b.firebasestorage.app",
-        messagingSenderId: "586212668823",
-        appId: "1:586212668823:web:12eac7b3e53e4c840e40d2",
-        measurementId: "G-CZCSHWJD5E"
+        apiKey: "AIzaSyBBveJmrWxVnnalA34G7KZR6COhrOcxiok",
+        authDomain: "solo-levelling-system-5edae.firebaseapp.com",
+        projectId: "solo-levelling-system-5edae",
+        storageBucket: "solo-levelling-system-5edae.firebasestorage.app",
+        messagingSenderId: "800420338485",
+        appId: "1:800420338485:web:faa95b0a692fe9abb8ca7c"
     };
 
     firebase.initializeApp(firebaseConfig);
@@ -532,7 +442,7 @@ function playSfx(type) {
             p = {
                 name: user.displayName, level: 1, exp: 0, streak: 0, job: "UNAWAKENED",
                 stats: { STR: 10, AGI: 10, VIT: 10, INT: 10, FOC: 10 },
-                cargo: {}, missions: [], lastUpdate: new Date().toDateString(), points: 0
+                cargo: {}, missions: [], lastUpdate: new Date().toDateString()
             };
             await docRef.set(p);
         }
@@ -553,37 +463,18 @@ function playSfx(type) {
     }
 
     function checkSystemDay() {
-    const today = new Date().toDateString();
-    
-    // Only run if the date has changed (timer reset/new day)
-    if (p.lastUpdate !== today) {
-        
-        // --- PENALTY CHECK ---
-        if (p.missions && p.missions.length > 0) {
-            // Check if any mission in the array is NOT completed
-            const hasIncomplete = p.missions.some(m => !m.completed);
-            
-            if (hasIncomplete) {
-                const oldLevel = p.level;
-                // Subtract 1 Level (Minimum Level 1)
-                p.level = Math.max(1, p.level - 1);
-                p.exp = 0; // Reset EXP as further punishment
-                
-                // Visual Alert
-                showSystemMessage("PENALTY", `QUESTS INCOMPLETE. LEVEL DROPPED: ${oldLevel} -> ${p.level}`);
-                playSfx('alert'); 
-            } else {
-                // If all completed, maybe give a streak bonus here
-                p.streak++;
+        const today = new Date().toDateString();
+        if (p.lastUpdate !== today) {
+            const incomplete = p.missions.some(m => !m.done);
+            if (incomplete && p.level > 1) {
+                p.level--; p.streak = 0;
+                alert("PENALTY PROTOCOL: Daily Quest Incomplete. Level Reduced.");
             }
+            p.lastUpdate = today;
+            generateQuests();
+            save();
         }
-
-        // --- PREPARE NEW DAY ---
-        p.lastUpdate = today;
-        generateQuests(); // This uses your Even/Odd STR logic
-        save();
     }
-}
 
     // --- MISSIONS ---
 function generateQuests() {
@@ -627,7 +518,7 @@ function generateQuests() {
     let selectedMissions = pool
         .sort(() => 0.5 - Math.random())
         .slice(0, 5)
-        .map((q, i) => ({ ...q, id: i, done: false, isSurprise: false }));
+        .map((q, i) => ({ ...q, id: i.toString(), done: false, isSurprise: false }));
 
     // 4. Inject Surprise Quest (Level 10-15 Only)
     if (p.level >= 10 && p.level <= 15) {
@@ -653,28 +544,29 @@ function generateQuests() {
 }
 
     // Step 1: The Trigger (Asks the player)
-function completeMission(id) {
-    if (p.missions[id].done) return;
-    
-    playSfx('click');
-    
-    // Create the Confirmation Overlay
-    const confirmOverlay = document.createElement('div');
-    confirmOverlay.className = 'overlay';
-    confirmOverlay.id = 'confirm-overlay';
-    confirmOverlay.innerHTML = `
-        <div class="hologram">
-            <div style="color:var(--accent); font-family:'JetBrains Mono'; font-size:0.7rem;">[ MISSION COMPLETION ]</div>
-            <h2 style="margin:15px 0; font-weight:300;">Confirm Results?</h2>
-            <p style="font-size:0.8rem; color:#aaa;">Have you truly completed: <br><b>${p.missions[id].n}</b>?</p>
-            <div class="btn-group">
-                <button class="btn btn-confirm" onclick="executeMission(${id})">YES</button>
-                <button class="btn btn-cancel" onclick="this.parentElement.parentElement.parentElement.remove()">NO</button>
+    function completeMission(id) {
+        if (p.missions.find(m => m.id == id)?.done) return;
+        
+        playSfx('click');
+        
+        // Create the Confirmation Overlay
+        const confirmOverlay = document.createElement('div');
+        confirmOverlay.className = 'overlay';
+        confirmOverlay.id = 'confirm-overlay';
+        const mission = p.missions.find(m => m.id == id);
+        confirmOverlay.innerHTML = `
+            <div class="hologram">
+                <div style="color:var(--accent); font-family:'JetBrains Mono'; font-size:0.7rem;">[ MISSION COMPLETION ]</div>
+                <h2 style="margin:15px 0; font-weight:300;">Confirm Results?</h2>
+                <p style="font-size:0.8rem; color:#aaa;">Have you truly completed: <br><b>${mission.n}</b>?</p>
+                <div class="btn-group">
+                    <button class="btn btn-confirm" onclick="executeMission('${id}')">YES</button>
+                    <button class="btn btn-cancel" onclick="this.parentElement.parentElement.parentElement.remove()">NO</button>
+                </div>
             </div>
-        </div>
-    `;
-    document.body.appendChild(confirmOverlay);
-}
+        `;
+        document.body.appendChild(confirmOverlay);
+    }
     
 function checkDailyCompletion() {
     const regularMissions = p.missions.filter(m => !m.isSurprise);
@@ -749,7 +641,7 @@ async function executeMission(id) {
     if (confirmOverlay) confirmOverlay.remove();
     
     // --- 1. DYNAMIC EXP REWARD ---
-    let mission = p.missions[id] || p.missions.find(m => m.id === id);
+    let mission = p.missions.find(m => m.id == id);
     let expGain = 10; // Base for INT/FOC/VIT
 
     if (mission.s === 'STR' || mission.s === 'AGI') expGain = 15; // Physical bonus
@@ -831,20 +723,10 @@ async function executeMission(id) {
     "Elixir of Greatness": { desc: "Legendary: ALL STATS +5. Gold Grade.", run: () => { 
         Object.keys(p.stats).forEach(k => p.stats[k] += 5); return "All stats increased by 5."; 
     }},
-    "System Key": { 
-    desc: "Legendary: Required for Job Change. [LVL 40]", 
-    run: () => {
-        if (Number(p.level) < 40) { 
-            // Return the key to inventory immediately
-            p.cargo["System Key"] = (p.cargo["System Key"] || 0) + 1; 
-            return "ACCESS DENIED: Insufficient Level. Requirement: 40"; 
-        }
-        
-        // Start the quest
-        startJobQuest(); 
-        return "SYSTEM: Job Change Protocol Initiated.";
-    }
-}
+    "System Key": { desc: "Legendary: Required for Job Change. [LVL 40]. Gold Grade", run: () => { 
+        if (p.level < 40) { p.cargo["System Key"]++; return "ACCESS DENIED: Insufficient Level."; }
+        p.job = "TRIAL IN PROGRESS"; return "JOB CHANGE PROTOCOL INITIATED.";
+    }}
 };
 
 function handleItemInteraction(itemName) {
@@ -882,6 +764,13 @@ function consumeItem(itemName) {
         
         showSystemMessage("ITEM CONSUMED", resultText);
         
+        // Level up check
+        if (p.exp >= p.level * 100) {
+            p.level++; p.exp = 0;
+            playSfx('levelUp');
+            showSystemMessage("LEVEL UP", `Reached Level ${p.level}`);
+        }
+        
         save();
         updateUI();
         render('cargo'); 
@@ -896,50 +785,17 @@ function consumeItem(itemName) {
     if (timerId) clearInterval(timerId);
 
     if (tab === 'status') {
-        let statsHTML = '';
-        // Your existing stats loop...
-        for (const [s, v] of Object.entries(p.stats)) {
-            statsHTML += `
-                <div class="stat-row">
-                    <span>${s}</span>
-                    <div style="display:flex; align-items:center; gap:10px;">
-                        <span>${v}</span>
-                        ${p.points > 0 ? `<button class="btn-sm" onclick="addStat('${s}')">+</button>` : ''}
-                    </div>
-                </div>`;
-        }
-
-        // Injecting the Calendar IMMEDIATELY after the stats
-        cont.innerHTML = `
-            <div class="hologram">
-                <div class="section-title">CHARACTER STATUS</div>
-                ${statsHTML}
-                <div class="stat-row" style="margin-top:10px; border-top:1px solid #222; padding-top:10px;">
-                    <span>AVAILABLE POINTS</span>
-                    <span style="color:var(--accent)">${p.points || 0}</span>
-                </div>
-
-                <!-- THE CALENDAR SECTION -->
-                <div class="calendar-wrapper">
-                    <div class="calendar-header">
-                        <span>[ MONTHLY LOG ]</span>
-                        <span>${new Date().toLocaleString('default', { month: 'long' }).toUpperCase()}</span>
-                    </div>
-                    <div id="status-calendar" class="heatmap-grid"></div>
-                    <div class="calendar-legend">
-                        <div class="legend-item"><div class="day-box success"></div> Done</div>
-                        <div class="legend-item"><div class="day-box fail"></div> Failed</div>
-                        <div class="legend-item"><div class="day-box"></div> Empty</div>
-                    </div>
-                </div>
-            </div>
-        `;
-        // Draw the days into the grid we just created
-        renderStatusCalendar();
+        const statColors = { STR: '#ff3e3e', AGI: '#00ff95', VIT: '#ffaa00', INT: '#bf00ff', FOC: '#00d4ff' };
+        cont.innerHTML = `<div class="chart-wrap"><canvas id="statsChart"></canvas></div>` + 
+            Object.entries(p.stats).map(([k,v]) => `
+            <div style="display:flex; justify-content:space-between; padding:15px; border-bottom:1px solid #111; font-family:'JetBrains Mono';">
+                <span style="color:#777;">${k}</span>
+                <span style="color:${statColors[k]}; font-weight:bold; text-shadow: 0 0 5px ${statColors[k]}55;">${v.toString().padStart(2,'0')}</span>
+            </div>`).join('');
+        initChart();
     } else if (tab === 'mission') {
-        cont.innerHTML = `<div id="timer">24:00:00</div>
-        <div id="current-date-display"></div>` + p.missions.map(m => `
-            <div class="quest-card ${m.done ? 'done' : ''}" onclick="completeMission(${m.id})">
+        cont.innerHTML = `<div id="timer">00:00:00</div>` + p.missions.map(m => `
+            <div class="quest-card ${m.done ? 'done' : ''}" onclick="completeMission('${m.id}')">
                 <div><span class="quest-req">${m.s}</span><br><span class="quest-title">${m.n}</span></div>
                 <div class="quest-req">REQ: ${m.r}</div>
             </div>`).join('');
@@ -977,53 +833,7 @@ function consumeItem(itemName) {
         `;
         fetchLeaderboard();
     }
-
-    function renderStatusCalendar() {
-        const calendarEl = document.getElementById('status-calendar');
-        if (!calendarEl) return;
-
-        const now = new Date();
-        const year = now.getFullYear();
-        const month = now.getMonth();
-        const today = now.getDate();
-        const firstDay = new Date(year, month, 1).getDay(); // 0 = Sunday
-        const daysInMonth = new Date(year, month + 1, 0).getDate();
-
-        let html = '';
-
-        // Empty cells for days before the first day of the month
-        for (let i = 0; i < firstDay; i++) {
-            html += '<div class="day-box"></div>';
-        }
-
-        // Days of the month
-        for (let day = 1; day <= daysInMonth; day++) {
-            let className = 'day-box';
-            if (day === today) {
-                className += ' today';
-                // Mark as success if all missions are done, fail if not
-                const allDone = p.missions && p.missions.every(m => m.done);
-                if (allDone) {
-                    className += ' success';
-                } else {
-                    className += ' fail';
-                }
-            }
-            html += `<div class="${className}">${day}</div>`;
-        }
-
-        calendarEl.innerHTML = html;
-    }
-
-    function addStat(stat) {
-        if (p.points > 0) {
-            p.stats[stat]++;
-            p.points--;
-            save();
-            updateUI();
-            render('status');
-        }
-    }
+}
 
     function initChart() {
         const ctx = document.getElementById('statsChart').getContext('2d');
@@ -1056,7 +866,6 @@ function consumeItem(itemName) {
     }
 
     function updateTimer() {
-        document.getElementById('current-date-display').innerText = new Date().toDateString().toUpperCase();
         const el = document.getElementById('timer');
         if(!el) return;
         const end = new Date(); end.setHours(23,59,59,999);
@@ -1065,19 +874,7 @@ function consumeItem(itemName) {
         const m = Math.floor((diff%3600000)/60000).toString().padStart(2,'0');
         const s = Math.floor((diff%60000)/1000).toString().padStart(2,'0');
         el.innerText = `${h}:${m}:${s}`;
-        const now = new Date();
-        const dateString = now.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
-        
-        // Target the element below your timer (ensure you have this ID in your HTML)
-        const dateEl = document.getElementById('current-date-display');
-        if (dateEl) {
-            dateEl.innerText = dateString;
-            dateEl.style.fontSize = "0.65rem"; // Small size
-            dateEl.style.opacity = "0.5";      // Subdued look
-            dateEl.style.marginTop = "2px";
-        }
-}
-
+    }
     
     function showSystemMessage(title, body) {
         playSfx('ping'); // <--- Add this line
@@ -1096,15 +893,6 @@ function consumeItem(itemName) {
 
     function updateUI() {
     if (!p) return; // Safety check for player object
-
-    // Display Date
-    const dateEl = document.getElementById('current-date-display');
-    if (dateEl) {
-        const now = new Date();
-        dateEl.innerText = now.toLocaleDateString('en-GB', { 
-            day: '2-digit', month: 'short', year: 'numeric' 
-        }).toUpperCase();
-    }
 
     // 1. CALCULATE CURRENT LEVEL GOAL
     // Must match the gainExp formula exactly: 100 + (Level * 5)
@@ -1158,87 +946,34 @@ function consumeItem(itemName) {
         .limit(20)
         .onSnapshot(snapshot => {
         if (!document.getElementById('leaderboard-display')) return; // Exit if user switched tabs
-        
-        lbDisplay.innerHTML = "";
-        snapshot.docs.forEach((doc, index) => {
-        const data = doc.data();
-        const isMe = auth.currentUser && auth.currentUser.uid === doc.id;
-        const rank = index + 1;
+            
+            lbDisplay.innerHTML = "";
+            
+            snapshot.docs.forEach((doc, index) => {
+                const data = doc.data();
+                const isMe = auth.currentUser && auth.currentUser.uid === doc.id;
+                const rank = index + 1;
 
-        const item = document.createElement('div');
-        item.className = `lb-item ${isMe ? 'is-me' : ''}`;
-        item.innerHTML = `
+                const item = document.createElement('div');
+                item.className = `lb-item ${isMe ? 'is-me' : ''}`;
+                item.innerHTML = `
                     <div class="lb-rank">${rank.toString().padStart(2, '0')}</div>
                     <div class="lb-info">
-                    <span class="name">${data.name || "UNKNOWN"} ${isMe ? '(YOU)' : ''}</span>
-                    <span class="job">${data.job || "UNAWAKENED"}</span>
-                </div>
-                <div class="lb-level">LVL ${data.level}</div>
-            `;
-            lbDisplay.appendChild(item);
+                        <span class="name">${data.name || "UNKNOWN"} ${isMe ? '(YOU)' : ''}</span>
+                        <span class="job">${data.job || "UNAWAKENED"}</span>
+                    </div>
+                    <div class="lb-level">LVL ${data.level}</div>
+                `;
+                lbDisplay.appendChild(item);
+            });
+        }, error => {
+            console.error("Leaderboard Error:", error);
+            lbDisplay.innerHTML = `<div style="color:var(--danger); font-size:0.7rem;">FAILED TO SYNC RANKINGS. CHECK INDEXES.</div>`;
         });
-    }, error => {
-        console.error("Leaderboard Error:", error);
-        lbDisplay.innerHTML = `<div style="color:var(--danger); font-size:0.7rem;">FAILED TO SYNC RANKINGS. CHECK INDEXES.</div>`;
-    });
-}
-function startJobQuest() {
-    const overlay = document.getElementById('evolution-overlay');
-    const bar = document.getElementById('evo-bar-fill');
-    
-    overlay.classList.remove('hidden');
-    document.getElementById('evo-loading').classList.remove('hidden');
-    document.getElementById('evo-result').classList.add('hidden');
-    
-    // Animate the analysis bar
-    setTimeout(() => { bar.style.width = '100%'; }, 100);
-
-    setTimeout(() => {
-        document.getElementById('evo-loading').classList.add('hidden');
-        document.getElementById('evo-result').classList.remove('hidden');
-        
-        // --- AUTOMATIC ANALYSIS ---
-        // Determines job based on highest stat
-        const stats = p.stats;
-        let job = "ASSASSIN"; // Default if AGI is high
-        
-        if (stats.INT > stats.STR && stats.INT > stats.AGI) {
-            job = "MAGE";
-        } else if (stats.STR > stats.AGI) {
-            job = "TANKER";
-        } else if (stats.AGI > stats.STR) {
-            job = "SHADOW MONARCH";
-        }
-        
-        document.getElementById('revealed-job').innerText = job;
-        p.pendingJob = job; // Store it but don't apply it yet
-    }, 3200);
-}
-
-function confirmJobChange(accepted) {
-    const overlay = document.getElementById('evolution-overlay');
-    
-    if (accepted) {
-        // Change the job name
-        p.job = p.pendingJob; 
-        showSystemMessage("SUCCESS", `You have evolved into a ${p.job}!`);
-    } else {
-        // No changes occur
-        showSystemMessage("SYSTEM", "Evolution refused. Job remains UNAWAKENED.");
-    }
-    
-    // Cleanup
-    delete p.pendingJob;
-    overlay.classList.add('hidden');
-    document.getElementById('evo-bar-fill').style.width = '0%';
-    
-    save();
-    updateUI();
 }
 </script>
 </body>
 </html>
-
 
 
 
