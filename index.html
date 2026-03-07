@@ -193,6 +193,23 @@
             margin: 0 auto 25px; 
         }
 
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .section-title {
+            color: var(--accent);
+            font-family: 'JetBrains Mono';
+            font-size: 0.7rem;
+            text-align: center;
+            margin-bottom: 20px;
+            letter-spacing: 2px;
+        }
+
         .quest-card {
             background: rgba(255,255,255,0.02);
             border: 1px solid var(--border);
@@ -515,7 +532,7 @@ function playSfx(type) {
             p = {
                 name: user.displayName, level: 1, exp: 0, streak: 0, job: "UNAWAKENED",
                 stats: { STR: 10, AGI: 10, VIT: 10, INT: 10, FOC: 10 },
-                cargo: {}, missions: [], lastUpdate: new Date().toDateString()
+                cargo: {}, missions: [], lastUpdate: new Date().toDateString(), points: 0
             };
             await docRef.set(p);
         }
@@ -893,13 +910,13 @@ function consumeItem(itemName) {
         }
 
         // Injecting the Calendar IMMEDIATELY after the stats
-        main.innerHTML = `
+        cont.innerHTML = `
             <div class="hologram">
                 <div class="section-title">CHARACTER STATUS</div>
                 ${statsHTML}
                 <div class="stat-row" style="margin-top:10px; border-top:1px solid #222; padding-top:10px;">
                     <span>AVAILABLE POINTS</span>
-                    <span style="color:var(--accent)">${p.points}</span>
+                    <span style="color:var(--accent)">${p.points || 0}</span>
                 </div>
 
                 <!-- THE CALENDAR SECTION -->
@@ -960,7 +977,53 @@ function consumeItem(itemName) {
         `;
         fetchLeaderboard();
     }
-}
+
+    function renderStatusCalendar() {
+        const calendarEl = document.getElementById('status-calendar');
+        if (!calendarEl) return;
+
+        const now = new Date();
+        const year = now.getFullYear();
+        const month = now.getMonth();
+        const today = now.getDate();
+        const firstDay = new Date(year, month, 1).getDay(); // 0 = Sunday
+        const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+        let html = '';
+
+        // Empty cells for days before the first day of the month
+        for (let i = 0; i < firstDay; i++) {
+            html += '<div class="day-box"></div>';
+        }
+
+        // Days of the month
+        for (let day = 1; day <= daysInMonth; day++) {
+            let className = 'day-box';
+            if (day === today) {
+                className += ' today';
+                // Mark as success if all missions are done, fail if not
+                const allDone = p.missions && p.missions.every(m => m.done);
+                if (allDone) {
+                    className += ' success';
+                } else {
+                    className += ' fail';
+                }
+            }
+            html += `<div class="${className}">${day}</div>`;
+        }
+
+        calendarEl.innerHTML = html;
+    }
+
+    function addStat(stat) {
+        if (p.points > 0) {
+            p.stats[stat]++;
+            p.points--;
+            save();
+            updateUI();
+            render('status');
+        }
+    }
 
     function initChart() {
         const ctx = document.getElementById('statsChart').getContext('2d');
