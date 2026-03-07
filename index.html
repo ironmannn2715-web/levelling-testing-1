@@ -347,6 +347,7 @@
         <div style="flex: 1;">
             <span class="hunter-name" id="disp-name">PLAYER_UNKNOWN</span>
             <div id="rank-display" class="rank-box">RANK: E</div>
+            
             <div id="job-display">UNAWAKENED</div>
             <div class="lvl-text">LVL <span id="lvl-display">01</span></div>
         </div>
@@ -368,26 +369,31 @@
     <button onclick="render('cargo')" id="nav-cargo">INVENTORY</button>
 </nav>
 
-<div id="evolution-overlay" class="overlay hidden" style="z-index: 9999; background: rgba(0,0,0,0.95); display: flex; align-items: center; justify-content: center;">
-    <div id="evo-loading" class="hologram" style="text-align: center;">
-        <div style="color:var(--accent); font-size: 0.7rem; letter-spacing: 2px;">[ SYSTEM EVALUATION ]</div>
-        <h2 style="font-weight: 300; margin: 20px 0;">ANALYZING HUNTER RECORD...</h2>
-        <div style="width: 200px; height: 2px; background: #111; margin: 0 auto;">
-            <div id="evo-bar-fill" style="width: 0%; height: 100%; background: var(--accent); transition: width 3s linear;"></div>
+<div id="evolution-overlay" class="overlay hidden" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.95); z-index:10000; display:flex; align-items:center; justify-content:center;">
+    <div class="hologram" style="padding:40px; text-align:center; border:1px solid var(--border);">
+        
+        <!-- Loading Phase -->
+        <div id="evo-loading">
+            <div style="color:var(--accent); font-size:0.7rem; letter-spacing:3px;">[ SYSTEM ANALYSIS ]</div>
+            <h2 style="margin:20px 0; font-weight:300;">EVALUATING HUNTER POTENTIAL...</h2>
+            <div style="width:250px; height:2px; background:#111; margin:0 auto; overflow:hidden;">
+                <div id="evo-bar-fill" style="width:0%; height:100%; background:var(--accent); transition: width 3s linear;"></div>
+            </div>
         </div>
-    </div>
 
-    <div id="evo-result" class="hologram hidden" style="text-align: center;">
-        <div style="color:var(--accent); font-size: 0.7rem; letter-spacing: 2px;">[ ANALYSIS COMPLETE ]</div>
-        <p style="margin: 15px 0; opacity: 0.8;">The System has found your true path:</p>
-        <h1 id="revealed-job" style="color: var(--accent); letter-spacing: 5px; text-shadow: 0 0 10px var(--accent);">---</h1>
-        <div style="display: flex; gap: 15px; justify-content: center; margin-top: 30px;">
-            <button class="btn" onclick="confirmJobChange(true)">ACCEPT</button>
-            <button class="btn" style="background: #222; border-color: #444;" onclick="confirmJobChange(false)">REFUSE</button>
+        <!-- Result Phase -->
+        <div id="evo-result" class="hidden">
+            <div style="color:var(--accent); font-size:0.7rem; letter-spacing:3px; margin-bottom:10px;">[ ANALYSIS COMPLETE ]</div>
+            <p style="opacity:0.6; font-size:0.8rem;">Your compatible path is:</p>
+            <h1 id="revealed-job" style="margin:20px 0; letter-spacing:4px;">---</h1>
+            <div style="display:flex; gap:15px; justify-content:center; margin-top:30px;">
+                <button class="btn" onclick="confirmJobChange(true)">ACCEPT POWER</button>
+                <button class="btn" style="background:#222;" onclick="confirmJobChange(false)">DECLINE</button>
+            </div>
         </div>
+        
     </div>
 </div>
-
 </div>
 
 <script>
@@ -745,10 +751,18 @@ async function executeMission(id) {
     "Elixir of Greatness": { desc: "Legendary: ALL STATS +5. Gold Grade.", run: () => { 
         Object.keys(p.stats).forEach(k => p.stats[k] += 5); return "All stats increased by 5."; 
     }},
-    "System Key": { desc: "Legendary: Required for Job Change. [LVL 40]. Gold Grade", run: () => { 
-        if (p.level < 40) { p.cargo["System Key"]++; return "ACCESS DENIED: Insufficient Level."; }
-        p.job = "TRIAL IN PROGRESS"; return "JOB CHANGE PROTOCOL INITIATED.";
-    }}
+    "System Key": { 
+        desc: "Legendary: Required for Job Change. [LVL 40]", 
+        run: () => {
+            if (Number(p.level) < 40) { 
+                // Return key to inventory if level is too low
+                p.cargo["System Key"] = (p.cargo["System Key"] || 0) + 1; 
+                return "ACCESS DENIED: Required Level 40."; 
+            }
+            startJobQuest(); 
+            return "SYSTEM: Analyzing player compatibility...";
+        }
+    }
 };
 
 function handleItemInteraction(itemName) {
@@ -808,7 +822,16 @@ function consumeItem(itemName) {
 
     if (tab === 'status') {
         const statColors = { STR: '#ff3e3e', AGI: '#00ff95', VIT: '#ffaa00', INT: '#bf00ff', FOC: '#00d4ff' };
-        cont.innerHTML = `<div class="chart-wrap"><canvas id="statsChart"></canvas></div>` + 
+        cont.innerHTML = `
+        <div style="text-align:center; padding: 20px 0; border-bottom: 1px solid #222; margin-bottom: 10px;">
+            <div style="font-size: 0.6rem; color: #555; letter-spacing: 2px; margin-bottom: 5px;">CURRENT PATH</div>
+            <div style="font-size: 1.2rem; font-family: 'JetBrains Mono';">
+                ${getJobMarkup(p.job || "UNAWAKENED")}
+            </div>
+        </div>
+        
+        <div class="chart-wrap"><canvas id="statsChart"></canvas></div>
+        ` +
             Object.entries(p.stats).map(([k,v]) => `
             <div style="display:flex; justify-content:space-between; padding:15px; border-bottom:1px solid #111; font-family:'JetBrains Mono';">
                 <span style="color:#777;">${k}</span>
@@ -1000,43 +1023,65 @@ function startJobQuest() {
     const overlay = document.getElementById('evolution-overlay');
     const bar = document.getElementById('evo-bar-fill');
     
+    // 1. Reset UI and Show Dark Overlay
     overlay.classList.remove('hidden');
     document.getElementById('evo-loading').classList.remove('hidden');
     document.getElementById('evo-result').classList.add('hidden');
-    
-    // Animation trigger
+    bar.style.width = '0%';
+
+    // 2. Start Loading Bar Animation (3 seconds)
     setTimeout(() => { bar.style.width = '100%'; }, 100);
 
+    // 3. Perform Stat Analysis after 3.2 seconds
     setTimeout(() => {
         document.getElementById('evo-loading').classList.add('hidden');
         document.getElementById('evo-result').classList.remove('hidden');
         
-        // Automated Stat Analysis
         const s = p.stats;
-        let job = "ASSASSIN"; 
-        if (s.INT > s.STR && s.INT > s.AGI) job = "MAGE";
-        else if (s.STR > s.AGI) job = "TANKER";
-        else if (s.AGI > s.STR) job = "SHADOW MONARCH";
+        let job = "ASSASSIN"; // Default if stats are even
         
-        document.getElementById('revealed-job').innerText = job;
+        // Automated Class Selection Logic
+        if (s.INT > s.STR && s.INT > s.AGI) {
+            job = "MAGE";
+        } else if (s.STR > s.AGI && s.STR > s.INT) {
+            job = "TANKER";
+        } else if (s.AGI > s.STR && s.AGI > s.INT) {
+            job = "SHADOW MONARCH";
+        }
+        
+        // Display result and store it temporarily
+        document.getElementById('revealed-job').innerHTML = getJobMarkup(job);
         p.pendingJob = job; 
     }, 3200);
 }
 
 function confirmJobChange(accepted) {
     if (accepted && p.pendingJob) {
-        p.job = p.pendingJob;
-        showSystemMessage("EVOLUTION", `YOU ARE NOW A ${p.job}`);
+        p.job = p.pendingJob; // Official Change
+        showSystemMessage("EVOLUTION", `AWAKENED AS ${p.job}`);
     } else {
-        showSystemMessage("SYSTEM", "EVOLUTION CANCELLED.");
+        showSystemMessage("SYSTEM", "EVOLUTION DECLINED. STATUS: UNAWAKENED");
     }
     
+    // Cleanup and Save
     delete p.pendingJob;
     document.getElementById('evolution-overlay').classList.add('hidden');
-    document.getElementById('evo-bar-fill').style.width = '0%';
     save();
     updateUI();
-    render('status'); // Refresh status to show new Job Title
+    render('status'); 
+}
+
+// Generates the Icons and Colors for each Job
+function getJobMarkup(job) {
+    const styles = {
+        'MAGE': { icon: '✦', color: '#00f2ff' },
+        'TANKER': { icon: '🛡', color: '#ff8800' },
+        'ASSASSIN': { icon: '⚔', color: '#ff0044' },
+        'SHADOW MONARCH': { icon: '♔', color: '#bf00ff' },
+        'UNAWAKENED': { icon: '⬡', color: '#666' }
+    };
+    const s = styles[job.toUpperCase()] || styles['UNAWAKENED'];
+    return `<span style="color:${s.color}; text-shadow: 0 0 10px ${s.color};">${s.icon} ${job}</span>`;
 }
 </script>
 </body>
