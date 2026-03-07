@@ -752,18 +752,24 @@ async function executeMission(id) {
         Object.keys(p.stats).forEach(k => p.stats[k] += 5); return "All stats increased by 5."; 
     }},
     "System Key": { 
-        desc: "Legendary: Required for Job Change. [LVL 40]", 
-        run: () => {
-            if (Number(p.level) < 40) { 
-                // Return key to inventory if level is too low
-                p.cargo["System Key"] = (p.cargo["System Key"] || 0) + 1; 
-                return "ACCESS DENIED: Required Level 40."; 
-            }else {
-            startJobQuest(); 
-            return "SYSTEM: Analyzing player compatibility...";
-            }
+    desc: "Legendary: Required for Job Change. [LVL 40]", 
+    run: () => {
+        if (Number(p.level) < 40) { 
+            showSystemMessage("DENIED", "Required Level: 40");
+            return false; // <--- DOES NOT CONSUME
         }
-    }   
+
+        // Check if player is already awakened
+        if (p.job !== "UNAWAKENED") {
+            showSystemMessage("SYSTEM", "You have already awakened.");
+            return false; // <--- DOES NOT CONSUME
+        }
+
+        startJobQuest(); 
+        showSystemMessage("SYSTEM", "Analyzing hunter potential...");
+        return true; // <--- THIS TELLS THE SYSTEM TO CONSUME THE ITEM
+    }
+}
 };
 
 function handleItemInteraction(itemName) {
