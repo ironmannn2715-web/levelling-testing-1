@@ -266,6 +266,13 @@
     display: block;
     margin-bottom: 4px;
 }
+#current-date-display {
+    font-size: 0.65rem;
+    opacity: 0.5;
+    margin-top: 4px;
+    letter-spacing: 1px;
+    font-family: 'JetBrains Mono', monospace;
+}
 
 .rank-box { 
     font-family: 'JetBrains Mono'; 
@@ -483,18 +490,37 @@ function playSfx(type) {
     }
 
     function checkSystemDay() {
-        const today = new Date().toDateString();
-        if (p.lastUpdate !== today) {
-            const incomplete = p.missions.some(m => !m.done);
-            if (incomplete && p.level > 1) {
-                p.level--; p.streak = 0;
-                alert("PENALTY PROTOCOL: Daily Quest Incomplete. Level Reduced.");
+    const today = new Date().toDateString();
+    
+    // Only run if the date has changed (timer reset/new day)
+    if (p.lastUpdate !== today) {
+        
+        // --- PENALTY CHECK ---
+        if (p.missions && p.missions.length > 0) {
+            // Check if any mission in the array is NOT completed
+            const hasIncomplete = p.missions.some(m => !m.completed);
+            
+            if (hasIncomplete) {
+                const oldLevel = p.level;
+                // Subtract 1 Level (Minimum Level 1)
+                p.level = Math.max(1, p.level - 1);
+                p.exp = 0; // Reset EXP as further punishment
+                
+                // Visual Alert
+                showSystemMessage("PENALTY", `QUESTS INCOMPLETE. LEVEL DROPPED: ${oldLevel} -> ${p.level}`);
+                playSfx('alert'); 
+            } else {
+                // If all completed, maybe give a streak bonus here
+                p.streak++;
             }
-            p.lastUpdate = today;
-            generateQuests();
-            save();
         }
+
+        // --- PREPARE NEW DAY ---
+        p.lastUpdate = today;
+        generateQuests(); // This uses your Even/Odd STR logic
+        save();
     }
+}
 
     // --- MISSIONS ---
 function generateQuests() {
@@ -928,6 +954,15 @@ function consumeItem(itemName) {
 
     function updateUI() {
     if (!p) return; // Safety check for player object
+
+    // Display Date
+    const dateEl = document.getElementById('current-date-display');
+    if (dateEl) {
+        const now = new Date();
+        dateEl.innerText = now.toLocaleDateString('en-GB', { 
+            day: '2-digit', month: 'short', year: 'numeric' 
+        }).toUpperCase();
+    }
 
     // 1. CALCULATE CURRENT LEVEL GOAL
     // Must match the gainExp formula exactly: 100 + (Level * 5)
