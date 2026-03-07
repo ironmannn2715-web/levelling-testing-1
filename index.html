@@ -139,6 +139,52 @@
             padding: 20px 25px 120px; /* Space for Nav */
             -webkit-overflow-scrolling: touch;
         }
+        .calendar-wrapper {
+    margin-top: 25px;
+    padding: 10px;
+    background: rgba(0, 0, 0, 0.2);
+    border: 1px solid #222;
+}
+
+.calendar-header {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.6rem;
+    color: var(--accent);
+    margin-bottom: 10px;
+    font-family: 'JetBrains Mono';
+}
+
+.heatmap-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 3px;
+}
+
+.day-box {
+    aspect-ratio: 1/1;
+    background: #111;
+    border: 1px solid #222;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.5rem;
+    color: #444;
+}
+
+.day-box.success { background: #15ff0022; border-color: #15ff00; color: #15ff00; }
+.day-box.fail { background: #ff000022; border-color: #ff0000; color: #ff0000; }
+.day-box.today { border-color: var(--accent); box-shadow: inset 0 0 5px var(--accent); }
+
+.calendar-legend {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+    font-size: 0.5rem;
+    opacity: 0.6;
+}
+.legend-item { display: flex; align-items: center; gap: 4px; }
+.legend-item .day-box { width: 8px; height: 8px; }
 
         /* Stats & Pentagraph */
         .chart-wrap { 
@@ -833,14 +879,46 @@ function consumeItem(itemName) {
     if (timerId) clearInterval(timerId);
 
     if (tab === 'status') {
-        const statColors = { STR: '#ff3e3e', AGI: '#00ff95', VIT: '#ffaa00', INT: '#bf00ff', FOC: '#00d4ff' };
-        cont.innerHTML = `<div class="chart-wrap"><canvas id="statsChart"></canvas></div>` + 
-            Object.entries(p.stats).map(([k,v]) => `
-            <div style="display:flex; justify-content:space-between; padding:15px; border-bottom:1px solid #111; font-family:'JetBrains Mono';">
-                <span style="color:#777;">${k}</span>
-                <span style="color:${statColors[k]}; font-weight:bold; text-shadow: 0 0 5px ${statColors[k]}55;">${v.toString().padStart(2,'0')}</span>
-            </div>`).join('');
-        initChart();
+        let statsHTML = '';
+        // Your existing stats loop...
+        for (const [s, v] of Object.entries(p.stats)) {
+            statsHTML += `
+                <div class="stat-row">
+                    <span>${s}</span>
+                    <div style="display:flex; align-items:center; gap:10px;">
+                        <span>${v}</span>
+                        ${p.points > 0 ? `<button class="btn-sm" onclick="addStat('${s}')">+</button>` : ''}
+                    </div>
+                </div>`;
+        }
+
+        // Injecting the Calendar IMMEDIATELY after the stats
+        main.innerHTML = `
+            <div class="hologram">
+                <div class="section-title">CHARACTER STATUS</div>
+                ${statsHTML}
+                <div class="stat-row" style="margin-top:10px; border-top:1px solid #222; padding-top:10px;">
+                    <span>AVAILABLE POINTS</span>
+                    <span style="color:var(--accent)">${p.points}</span>
+                </div>
+
+                <!-- THE CALENDAR SECTION -->
+                <div class="calendar-wrapper">
+                    <div class="calendar-header">
+                        <span>[ MONTHLY LOG ]</span>
+                        <span>${new Date().toLocaleString('default', { month: 'long' }).toUpperCase()}</span>
+                    </div>
+                    <div id="status-calendar" class="heatmap-grid"></div>
+                    <div class="calendar-legend">
+                        <div class="legend-item"><div class="day-box success"></div> Done</div>
+                        <div class="legend-item"><div class="day-box fail"></div> Failed</div>
+                        <div class="legend-item"><div class="day-box"></div> Empty</div>
+                    </div>
+                </div>
+            </div>
+        `;
+        // Draw the days into the grid we just created
+        renderStatusCalendar();
     } else if (tab === 'mission') {
         cont.innerHTML = `<div id="timer">24:00:00</div>
         <div id="current-date-display"></div>` + p.missions.map(m => `
@@ -915,6 +993,7 @@ function consumeItem(itemName) {
     }
 
     function updateTimer() {
+        document.getElementById('current-date-display').innerText = new Date().toDateString().toUpperCase();
         const el = document.getElementById('timer');
         if(!el) return;
         const end = new Date(); end.setHours(23,59,59,999);
