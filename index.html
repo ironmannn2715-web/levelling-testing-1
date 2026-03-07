@@ -758,11 +758,12 @@ async function executeMission(id) {
                 // Return key to inventory if level is too low
                 p.cargo["System Key"] = (p.cargo["System Key"] || 0) + 1; 
                 return "ACCESS DENIED: Required Level 40."; 
-            }
+            }else {
             startJobQuest(); 
             return "SYSTEM: Analyzing player compatibility...";
+            }
         }
-    }
+    }   
 };
 
 function handleItemInteraction(itemName) {
