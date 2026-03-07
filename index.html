@@ -751,26 +751,12 @@ async function executeMission(id) {
     "Elixir of Greatness": { desc: "Legendary: ALL STATS +5. Gold Grade.", run: () => { 
         Object.keys(p.stats).forEach(k => p.stats[k] += 5); return "All stats increased by 5."; 
     }},
-    "System Key": { 
-    desc: "Legendary: Required for Job Change. [LVL 40]", 
-    run: () => {
-        if (Number(p.level) < 40) { 
-            showSystemMessage("DENIED", "Required Level: 40");
-            return false; // <--- DOES NOT CONSUME
-        }
-
-        // Check if player is already awakened
-        if (p.job !== "UNAWAKENED") {
-            showSystemMessage("SYSTEM", "You have already awakened.");
-            return false; // <--- DOES NOT CONSUME
-        }
-
-        startJobQuest(); 
-        showSystemMessage("SYSTEM", "Analyzing hunter potential...");
-        return true; // <--- THIS TELLS THE SYSTEM TO CONSUME THE ITEM
-    }
-}
+    "System Key": { desc: "Legendary: Required for Job Change. [LVL 40]. Gold Grade", run: () => {
+        if (p.level < 40) { p.cargo["System Key"]++; return "ACCESS DENIED: Insufficient Level."; }
+        p.job = "TRIAL IN PROGRESS"; return "JOB CHANGE PROTOCOL INITIATED.";startJobQuest();
+    }}
 };
+
 
 function handleItemInteraction(itemName) {
     const now = Date.now();
