@@ -418,12 +418,12 @@ function playSfx(type) {
     // --- FIREBASE CONFIG ---
     const firebaseConfig = {
         apiKey: "AIzaSyBBRAVqR1ZqthOmcYs9rxJULe7_w9AumJ4",
-      authDomain: "levelling-faa1b.firebaseapp.com",
-      projectId: "levelling-faa1b",
-      storageBucket: "levelling-faa1b.firebasestorage.app",
-      messagingSenderId: "586212668823",
-      appId: "1:586212668823:web:12eac7b3e53e4c840e40d2",
-      measurementId: "G-CZCSHWJD5E"
+        authDomain: "levelling-faa1b.firebaseapp.com",
+        projectId: "levelling-faa1b",
+        storageBucket: "levelling-faa1b.firebasestorage.app",
+        messagingSenderId: "586212668823",
+        appId: "1:586212668823:web:12eac7b3e53e4c840e40d2",
+        measurementId: "G-CZCSHWJD5E"
     };
 
     firebase.initializeApp(firebaseConfig);
@@ -793,13 +793,6 @@ function consumeItem(itemName) {
         
         showSystemMessage("ITEM CONSUMED", resultText);
         
-        // Level up check
-        if (p.exp >= p.level * 100) {
-            p.level++; p.exp = 0;
-            playSfx('levelUp');
-            showSystemMessage("LEVEL UP", `Reached Level ${p.level}`);
-        }
-        
         save();
         updateUI();
         render('cargo'); 
@@ -825,7 +818,7 @@ function consumeItem(itemName) {
     } else if (tab === 'mission') {
         cont.innerHTML = `<div id="timer">24:00:00</div>
         <div id="current-date-display"></div>` + p.missions.map(m => `
-            <div class="quest-card ${m.done ? 'done' : ''}" onclick="completeMission('${m.id}')">
+            <div class="quest-card ${m.done ? 'done' : ''}" onclick="completeMission(${m.id})">
                 <div><span class="quest-req">${m.s}</span><br><span class="quest-title">${m.n}</span></div>
                 <div class="quest-req">REQ: ${m.r}</div>
             </div>`).join('');
