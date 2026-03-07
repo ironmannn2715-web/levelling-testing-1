@@ -845,7 +845,7 @@ function consumeItem(itemName) {
             }).join('');
     }
         // Add this inside your existing render(tab) function
-      else if (tab === 'ranking') {
+    else if (tab === 'ranking') {
         cont.innerHTML = `
             <div style="text-align:center; color:var(--accent); font-family:'JetBrains Mono'; font-size:0.7rem; margin-bottom:20px;">
                 [ GLOBAL HUNTER RANKINGS ]
@@ -976,35 +976,34 @@ function consumeItem(itemName) {
     
     // Querying 'hunters' collection by Level (Highest to Lowest)
     db.collection('hunters')
-      .orderBy('level', 'desc')
-      .orderBy('exp', 'desc')
-      .limit(20)
-      .onSnapshot(snapshot => {
-          if (!document.getElementById('leaderboard-display')) return; // Exit if user switched tabs
-          
-          lbDisplay.innerHTML = "";
-          
-          snapshot.docs.forEach((doc, index) => {
-              const data = doc.data();
-              const isMe = auth.currentUser && auth.currentUser.uid === doc.id;
-              const rank = index + 1;
+        .orderBy('level', 'desc')
+        .orderBy('exp', 'desc')
+        .limit(20)
+        .onSnapshot(snapshot => {
+        if (!document.getElementById('leaderboard-display')) return; // Exit if user switched tabs
+        
+        lbDisplay.innerHTML = "";
+        snapshot.docs.forEach((doc, index) => {
+        const data = doc.data();
+        const isMe = auth.currentUser && auth.currentUser.uid === doc.id;
+        const rank = index + 1;
 
-              const item = document.createElement('div');
-              item.className = `lb-item ${isMe ? 'is-me' : ''}`;
-              item.innerHTML = `
-                  <div class="lb-rank">${rank.toString().padStart(2, '0')}</div>
-                  <div class="lb-info">
-                      <span class="name">${data.name || "UNKNOWN"} ${isMe ? '(YOU)' : ''}</span>
-                      <span class="job">${data.job || "UNAWAKENED"}</span>
-                  </div>
-                  <div class="lb-level">LVL ${data.level}</div>
-              `;
-              lbDisplay.appendChild(item);
-          });
-      }, error => {
-          console.error("Leaderboard Error:", error);
-          lbDisplay.innerHTML = `<div style="color:var(--danger); font-size:0.7rem;">FAILED TO SYNC RANKINGS. CHECK INDEXES.</div>`;
-      });
+        const item = document.createElement('div');
+        item.className = `lb-item ${isMe ? 'is-me' : ''}`;
+        item.innerHTML = `
+                    <div class="lb-rank">${rank.toString().padStart(2, '0')}</div>
+                    <div class="lb-info">
+                    <span class="name">${data.name || "UNKNOWN"} ${isMe ? '(YOU)' : ''}</span>
+                    <span class="job">${data.job || "UNAWAKENED"}</span>
+                </div>
+                <div class="lb-level">LVL ${data.level}</div>
+            `;
+            lbDisplay.appendChild(item);
+        });
+    }, error => {
+        console.error("Leaderboard Error:", error);
+        lbDisplay.innerHTML = `<div style="color:var(--danger); font-size:0.7rem;">FAILED TO SYNC RANKINGS. CHECK INDEXES.</div>`;
+    });
 }
 function startJobQuest() {
     const overlay = document.getElementById('evolution-overlay');
