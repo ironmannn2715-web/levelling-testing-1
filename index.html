@@ -1072,9 +1072,7 @@ function startJobQuest() {
 function confirmJobChange(accepted) {
     if (accepted && p.pendingJob) {
         p.job = p.pendingJob; 
-        playSystemSound('awakening-sound');// Official Change
         showSystemMessage("EVOLUTION", `AWAKENED AS ${p.job}`);
-        document.getElementById('disp-job').innerHTML = getJobMarkup(p.job);
     } else {
         showSystemMessage("SYSTEM", "EVOLUTION DECLINED. STATUS: UNAWAKENED");
     }
