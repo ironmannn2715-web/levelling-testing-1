@@ -397,6 +397,29 @@
 </div>
 
 <script>
+// Global Audio Context Unlock
+function unlockAudio() {
+    const silentBuffer = new AudioContext();
+    if (silentBuffer.state === 'suspended') {
+        silentBuffer.resume();
+    }
+    // Remove the listener once unlocked to save performance
+    document.removeEventListener('click', unlockAudio);
+    console.log("SYSTEM: Audio synchronized.");
+}
+
+document.addEventListener('click', unlockAudio);
+
+function playSystemSound(soundId) {
+    const audio = document.getElementById(soundId);
+    if (!audio) return;
+
+    // The 'play' method returns a Promise; we must catch the "NotAllowedError"
+    audio.play().catch(error => {
+        console.warn("Audio blocked: User interaction required before sound can play.");
+    });
+}
+
     // --- UPDATED SYSTEM SOUNDS ---
 const sounds = {
     // Sharp digital "Chime" for standard notifications
@@ -1010,8 +1033,6 @@ function consumeItem(itemName) {
         });
 }
 
-// --- GLOBAL SCOPE ---
-
 function startJobQuest() {
     const overlay = document.getElementById('evolution-overlay');
     const bar = document.getElementById('evo-bar-fill');
@@ -1050,8 +1071,10 @@ function startJobQuest() {
 
 function confirmJobChange(accepted) {
     if (accepted && p.pendingJob) {
-        p.job = p.pendingJob; // Official Change
+        p.job = p.pendingJob; 
+        playSystemSound('awakening-sound');// Official Change
         showSystemMessage("EVOLUTION", `AWAKENED AS ${p.job}`);
+        document.getElementById('disp-job').innerHTML = getJobMarkup(p.job);
     } else {
         showSystemMessage("SYSTEM", "EVOLUTION DECLINED. STATUS: UNAWAKENED");
     }
