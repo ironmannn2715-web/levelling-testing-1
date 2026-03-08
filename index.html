@@ -398,6 +398,16 @@
 
 <script>
     import { onSnapshot, query, collection, where } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { 
+    getFirestore, 
+    doc, 
+    getDoc, 
+    getDocs, 
+    collection, 
+    updateDoc, 
+    deleteDoc, 
+    addDoc  // <--- MAKE SURE THIS IS HERE
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 // Global Audio Context Unlock
 function unlockAudio() {
     const silentBuffer = new AudioContext();
@@ -500,12 +510,23 @@ function playSfx(type) {
         }
 
         function listenForAdminMessages(currentHunterName) {
-        // We only want messages sent AFTER the player logged in
-            const q = query(
-                collection(db, "notifications"), 
-                where("target", "==", currentHunterName.toLowerCase()),
-                where("timestamp", ">", Date.now())
-            );
+            console.log("System: Initializing Comm-Link for", currentHunterName);
+            
+            // Using the syntax that matches your 'db' setup
+            db.collection("notifications")
+            .where("target", "==", currentHunterName.toLowerCase())
+            .where("timestamp", ">", Date.now())
+            .onSnapshot((snapshot) => {
+                snapshot.docChanges().forEach((change) => {
+                    if (change.type === "added") {
+                        const data = change.doc.data();
+                        displaySystemPopup(data.message);
+                    }
+                });
+            }, (error) => {
+                console.error("Comm-Link Error:", error);
+            });
+        }
 
             // 2. This "onSnapshot" stays open and waits for the Architect to hit 'Send'
             onSnapshot(q, (snapshot) => {
@@ -516,31 +537,26 @@ function playSfx(type) {
                     }
                 });
             });
-        }
 
         // 3. The UI for the message
         function displaySystemPopup(text) {
             const popup = document.createElement('div');
+            popup.id = "system-notification";
             popup.style = `
                 position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
                 background: #000; border: 2px solid #ff0044; color: #fff;
-                padding: 20px; z-index: 100000; font-family: 'JetBrains Mono', monospace;
+                padding: 20px; z-index: 10000; font-family: monospace;
                 box-shadow: 0 0 20px rgba(255,0,68,0.5); width: 80%; max-width: 400px;
-                text-align: center; animation: slideDown 0.5s ease-out;
+                text-align: center;
             `;
             
             popup.innerHTML = `
-                <div style="color:#ff0044; font-size:0.7rem; margin-bottom:10px;">[ SYSTEM MESSAGE FROM ARCHITECT ]</div>
-                <div style="font-size:0.9rem;">${text}</div>
-                <button onclick="this.parentElement.remove()" style="margin-top:15px; background:transparent; border:1px solid #444; color:#444; cursor:pointer;">DISMISS</button>
+                <div style="color:#ff0044; font-size:10px; margin-bottom:10px;">[ SYSTEM MESSAGE ]</div>
+                <div>${text}</div>
+                <button onclick="this.parentElement.remove()" style="margin-top:15px; background:#222; border:1px solid #444; color:#eee; padding:5px 10px; cursor:pointer;">DISMISS</button>
             `;
             
             document.body.appendChild(popup);
-
-            // Add CSS animation to the head
-            const style = document.createElement('style');
-            style.innerHTML = `@keyframes slideDown { from { top: -100px; } to { top: 20px; } }`;
-            document.head.appendChild(style);
         }
         
         boot();
