@@ -20,7 +20,7 @@
             --bg: #030508;
             --accent: #00d4ff;
             --danger: #ff3e3e;
-            --success: #00ff95;
+            --success: #043927;
             --border: rgba(255,255,255,0.1);
         }
 
@@ -762,8 +762,22 @@ async function executeMission(id) {
         p.stats[s] += 5; return `Blessed! ${s} increased by 5.`; 
     }},
     "Shadow Essence": { desc: "Rare: AGI +5. Green Grade.", run: () => { p.stats.AGI += 5; return "AGI +5."; }},
-    "Warrior's Spirit": { desc: "Rare: STR +5. Green Grade.", run: () => { p.stats.STR += 5; return "STR +5."; }},
-    "Scholar's Scroll": { desc: "Rare: INT +5. Green Grade.", run: () => { p.stats.INT += 5; return "INT +5."; }},
+    "Warrior's Spirit": {
+        desc: "A flickering dark green flame. Increases STR by 5.",
+        run: () => {
+            p.stats.STR += 5;
+            showSystemMessage("STRENGTH UP", "+5 STR gained from Warrior's Spirit.");
+            return true; // Consumes the item
+        }
+    },
+    "Scholar's Scroll": {
+        desc: "Ancient text containing forbidden knowledge. Increases INT by 5.",
+        run: () => {
+            p.stats.INT += 5;
+            showSystemMessage("INTELLECT UP", "+5 INT gained from Scholar's Scroll.");
+            return true; // Consumes the item
+        }
+    },
     "Elixir of Life": { 
         desc: "Grants 50 EXP.", 
         run: () => { 
@@ -774,34 +788,47 @@ async function executeMission(id) {
     "Elixir of Greatness": { desc: "Legendary: ALL STATS +5. Gold Grade.", run: () => { 
         Object.keys(p.stats).forEach(k => p.stats[k] += 5); return "All stats increased by 5."; 
     }},
-    "System Key": { desc: "Legendary: Required for Job Change. [LVL 40]. Gold Grade", run: () => {
-        if (p.level < 40) { p.cargo["System Key"]++; return "ACCESS DENIED: Insufficient Level."; }
-        p.job = "TRIAL IN PROGRESS"; return "JOB CHANGE PROTOCOL INITIATED.";startJobQuest();
-    }}
+    "System Key": {
+        desc: "A key that glows with a faint dark green aura.",
+        run: () => {
+            if (p.level < 40) {
+                showSystemMessage("SYSTEM", "LEVEL TOO LOW (REQ. 40)");
+                return false; // Returns false so the key is NOT consumed
+            }
+            
+            // TRIGGER THE QUEST
+            startJobQuest(); 
+            
+            return true; // Returns true so the key IS consumed
+        }
+    }
 };
 
-function handleItemInteraction(itemName) {
-    const now = Date.now();
+function handleItemUse(itemName) {
     const effect = itemEffects[itemName];
 
-    if (now - lastTap < 300) {
-        // DOUBLE TAP -> CONSUME
-        consumeItem(itemName);
-        playSfx('consume');
-    } else {
-        // SINGLE TAP -> SHOW DEFINITION
-        // We use a small timeout to ensure we aren't about to double tap
-        setTimeout(() => {
-            if (Date.now() - lastTap >= 300) {
-                playSfx('click');
-                showSystemMessage(
-                    itemName.toUpperCase(), 
-                    `<span style="color:var(--accent)">EFFECT:</span><br>${effect.desc}<br><br><small>[ Double-tap to confirm consumption ]</small>`
-                );
+    // 1. Check if the item exists in our effects list
+    if (effect && typeof effect.run === 'function') {
+        
+        // 2. Execute the 'run' function (This wakes up startJobQuest)
+        const usedSuccessfully = effect.run();
+
+        // 3. If the function returns 'true', remove the item from inventory
+        if (usedSuccessfully) {
+            if (p.cargo[itemName] > 1) {
+                p.cargo[itemName]--;
+            } else {
+                delete p.cargo[itemName];
             }
-        }, 305);
+            
+            // 4. Save and Refresh UI
+            save();
+            render('inventory');
+            console.log(`${itemName} has been consumed.`);
+        }
+    } else {
+        console.warn("This item has no use effect.");
     }
-    lastTap = now;
 }
     
 function consumeItem(itemName) {
@@ -836,7 +863,7 @@ function consumeItem(itemName) {
     if (timerId) clearInterval(timerId);
 
     if (tab === 'status') {
-        const statColors = { STR: '#ff3e3e', AGI: '#00ff95', VIT: '#ffaa00', INT: '#bf00ff', FOC: '#00d4ff' };
+        const statColors = { STR: '#ff3e3e', AGI: '#043927', VIT: '#ffaa00', INT: '#bf00ff', FOC: '#00d4ff' };
         cont.innerHTML = `
         <div style="text-align:center; padding: 20px 0; border-bottom: 1px solid #222; margin-bottom: 10px;">
             <div style="font-size: 0.6rem; color: #555; letter-spacing: 2px; margin-bottom: 5px;">CURRENT PATH</div>
@@ -861,26 +888,40 @@ function consumeItem(itemName) {
             </div>`).join('');
         timerId = setInterval(updateTimer, 1000); updateTimer();
     } else if (tab === 'cargo') {
-        const hasItems = Object.entries(p.cargo).some(([n, c]) => c > 0);
-        if (!hasItems) { cont.innerHTML = `<div style="text-align:center; padding:50px; color:#444;">INVENTORY EMPTY</div>`; return; }
-        
-        cont.innerHTML = `<div style="color:#bf00ff; font-size:0.6rem; text-align:center; margin-bottom:15px;">[ DOUBLE-TAP TO USE ]</div>` +
-            Object.entries(p.cargo).map(([name, count]) => {
-                if (count <= 0) return '';
-                let color = '#bf00ff'; // Purple
-                if (name === 'System Key' || name === 'Elixir of Greatness') color = '#ffaa00'; // Gold
-                else if (["Shadow Essence", "Warrior's Spirit", "Scholar's Scroll", "Elixir of Life"].includes(name)) color = '#00ff95'; // Green
-
-                return `
-                <div class="quest-card" onclick="handleItemInteraction('${name}')" style="border-color:${color}; box-shadow: 0 0 10px ${color}33;">
-                    <div>
-                        <span class="quest-title" style="color:${color}">${name}</span>
-                        <div style="font-size:0.5rem; color:#555; margin-top:4px;">${color==='#ffaa00'?'ARTIFACT':'SYSTEM REWARD'}</div>
-                    </div>
-                    <span style="color:${color}; font-size:1.2rem; font-family:'JetBrains Mono';">x${count}</span>
-                </div>`;
-            }).join('');
+    const hasItems = Object.entries(p.cargo).some(([n, c]) => c > 0);
+    if (!hasItems) { 
+        cont.innerHTML = `<div style="text-align:center; padding:50px; color:#444;">INVENTORY EMPTY</div>`; 
+        return; 
     }
+
+    cont.innerHTML = `<div style="color:#bf00ff; font-size:0.6rem; text-align:center; margin-bottom:15px; letter-spacing:2px;">[ DOUBLE-TAP TO ACTIVATE ]</div>` +
+        Object.entries(p.cargo).map(([name, count]) => {
+            if (count <= 0) return '';
+
+            // 1. Pull the description from itemEffects
+            const info = itemEffects[name] || { desc: "System Item: No data available." };
+
+            // 2. Determine Color Logic
+            let color = '#bf00ff'; // Default Purple
+            if (name === 'System Key' || name === 'Elixir of Greatness') color = '#ffaa00'; // Gold
+            else if (["Shadow Essence", "Warrior's Spirit", "Scholar's Scroll", "Elixir of Life"].includes(name)) color = '#043927'; // Green
+
+            return `
+            <div class="quest-card" onclick="handleItemInteraction('${name}')" style="border-color:${color}; box-shadow: 0 0 10px ${color}33; display:flex; justify-content:space-between; align-items:center;">
+                <div style="flex-grow:1;">
+                    <span class="quest-title" style="color:${color}; display:block;">${name}</span>
+                    <!-- 3. Add the Description here -->
+                    <div style="font-size:0.55rem; color:#888; margin-top:4px; max-width:80%; line-height:1.2;">
+                        ${info.desc}
+                    </div>
+                </div>
+                <div style="text-align:right;">
+                    <span style="color:${color}; font-size:1.2rem; font-family:'JetBrains Mono';">x${count}</span>
+                    <div style="font-size:0.4rem; color:#444; margin-top:4px;">${color==='#ffaa00'?'ARTIFACT':'SYSTEM REWARD'}</div>
+                </div>
+            </div>`;
+        }).join('');
+}
         // Add this inside your existing render(tab) function
     else if (tab === 'ranking') {
         cont.innerHTML = `
