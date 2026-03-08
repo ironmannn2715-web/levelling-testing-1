@@ -780,31 +780,6 @@ async function executeMission(id) {
     }}
 };
 
-function handleDoubleClick(itemName) {
-    const effect = itemEffects[itemName];
-
-    if (effect && typeof effect.run === 'function') {
-        // This 'run()' is what calls startJobQuest()
-        const success = effect.run(); 
-
-        if (success) {
-            // Consume the item only if the quest started successfully
-            if (p.cargo[itemName] > 1) {
-                p.cargo[itemName]--;
-            } else {
-                delete p.cargo[itemName];
-            }
-            
-            save();
-            render('inventory'); 
-            showSystemMessage("SYSTEM", `${itemName} consumed.`);
-        }
-    } else {
-        showSystemMessage("ERROR", "This item cannot be used this way.");
-    }
-}
-
-
 function handleItemInteraction(itemName) {
     const now = Date.now();
     const effect = itemEffects[itemName];
@@ -905,10 +880,6 @@ function consumeItem(itemName) {
                     <span style="color:${color}; font-size:1.2rem; font-family:'JetBrains Mono';">x${count}</span>
                 </div>`;
             }).join('');
-            Object.keys(p.cargo).map(itemName => `
-                <div class="item-slot" ondblclick="handleDoubleClick('${itemName}')">
-                    ${itemName} (x${p.cargo[itemName]})
-                </div>`).join('');
     }
         // Add this inside your existing render(tab) function
     else if (tab === 'ranking') {
