@@ -733,7 +733,7 @@ async function executeMission(id) {
         p.cargo[r] = (p.cargo[r] || 0) + 1;
         
         let color = "var(--accent)";
-        if (rareRewards.includes(r)) color = "#00ff95";
+        if (rareRewards.includes(r)) color = "#0b2b0b";
         if (legendaryRewards.includes(r)) color = "#ffaa00";
 
         showSystemMessage("QUEST CLEAR", `Daily tasks finalized. <br>Received: <span style="color:${color}">${r}</span>`);
