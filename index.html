@@ -396,18 +396,9 @@
 </div>
 </div>
 
-<script>
+<script type="module">
     import { onSnapshot, query, collection, where } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-    import { 
-    getFirestore, 
-    doc, 
-    getDoc, 
-    getDocs, 
-    collection, 
-    updateDoc, 
-    deleteDoc, 
-    addDoc  // <--- MAKE SURE THIS IS HERE
-} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { getFirestore, doc, getDoc, getDocs, collection, updateDoc, deleteDoc, addDoc} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 // Global Audio Context Unlock
 function unlockAudio() {
     const silentBuffer = new AudioContext();
