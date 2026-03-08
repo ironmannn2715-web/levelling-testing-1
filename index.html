@@ -780,6 +780,30 @@ async function executeMission(id) {
     }}
 };
 
+function handleDoubleClick(itemName) {
+    const effect = itemEffects[itemName];
+
+    if (effect && typeof effect.run === 'function') {
+        // This 'run()' is what calls startJobQuest()
+        const success = effect.run(); 
+
+        if (success) {
+            // Consume the item only if the quest started successfully
+            if (p.cargo[itemName] > 1) {
+                p.cargo[itemName]--;
+            } else {
+                delete p.cargo[itemName];
+            }
+            
+            save();
+            render('inventory'); 
+            showSystemMessage("SYSTEM", `${itemName} consumed.`);
+        }
+    } else {
+        showSystemMessage("ERROR", "This item cannot be used this way.");
+    }
+}
+
 
 function handleItemInteraction(itemName) {
     const now = Date.now();
@@ -864,7 +888,7 @@ function consumeItem(itemName) {
     } else if (tab === 'cargo') {
         const hasItems = Object.entries(p.cargo).some(([n, c]) => c > 0);
         if (!hasItems) { cont.innerHTML = `<div style="text-align:center; padding:50px; color:#444;">INVENTORY EMPTY</div>`; return; }
-
+        
         cont.innerHTML = `<div style="color:#bf00ff; font-size:0.6rem; text-align:center; margin-bottom:15px;">[ DOUBLE-TAP TO USE ]</div>` +
             Object.entries(p.cargo).map(([name, count]) => {
                 if (count <= 0) return '';
@@ -881,6 +905,10 @@ function consumeItem(itemName) {
                     <span style="color:${color}; font-size:1.2rem; font-family:'JetBrains Mono';">x${count}</span>
                 </div>`;
             }).join('');
+            Object.keys(p.cargo).map(itemName => `
+                <div class="item-slot" ondblclick="handleDoubleClick('${itemName}')">
+                    ${itemName} (x${p.cargo[itemName]})
+                </div>`).join('');
     }
         // Add this inside your existing render(tab) function
     else if (tab === 'ranking') {
@@ -1096,6 +1124,30 @@ function getJobMarkup(job) {
     };
     const s = styles[job.toUpperCase()] || styles['UNAWAKENED'];
     return `<span style="color:${s.color}; text-shadow: 0 0 10px ${s.color};">${s.icon} ${job}</span>`;
+}
+
+// This function should be GLOBAL
+function useItem(itemName) {
+    const item = itemEffects[itemName];
+
+    if (!item) {
+        console.error("Item has no effect defined.");
+        return;
+    }
+
+    // This line is what "wakes up" startJobQuest()
+    const result = item.run(); 
+
+    // Optional: If the item is a potion/key, remove it from inventory
+    if (result === true) {
+        if (p.cargo[itemName] > 1) {
+            p.cargo[itemName]--;
+        } else {
+            delete p.cargo[itemName];
+        }
+        save();
+        render('inventory'); 
+    }
 }
 </script>
 </body>
