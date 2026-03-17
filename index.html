@@ -20,7 +20,7 @@
             --bg: #030508;
             --accent: #00d4ff;
             --danger: #ff3e3e;
-            --success: #043927;
+            --success: #00ff95;
             --border: rgba(255,255,255,0.1);
         }
 
@@ -347,7 +347,6 @@
         <div style="flex: 1;">
             <span class="hunter-name" id="disp-name">PLAYER_UNKNOWN</span>
             <div id="rank-display" class="rank-box">RANK: E</div>
-            
             <div id="job-display">UNAWAKENED</div>
             <div class="lvl-text">LVL <span id="lvl-display">01</span></div>
         </div>
@@ -368,95 +367,31 @@
     <button onclick="render('ranking')" id="nav-ranking">RANKING</button> 
     <button onclick="render('cargo')" id="nav-cargo">INVENTORY</button>
 </nav>
-
-<div id="evolution-overlay" class="overlay hidden" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.95); z-index:10000; display:flex; align-items:center; justify-content:center;">
-    <div class="hologram" style="padding:40px; text-align:center; border:1px solid var(--border);">
-        
-        <!-- Loading Phase -->
-        <div id="evo-loading">
-            <div style="color:var(--accent); font-size:0.7rem; letter-spacing:3px;">[ SYSTEM ANALYSIS ]</div>
-            <h2 style="margin:20px 0; font-weight:300;">EVALUATING HUNTER POTENTIAL...</h2>
-            <div style="width:250px; height:2px; background:#111; margin:0 auto; overflow:hidden;">
-                <div id="evo-bar-fill" style="width:0%; height:100%; background:var(--accent); transition: width 3s linear;"></div>
-            </div>
-        </div>
-
-        <!-- Result Phase -->
-        <div id="evo-result" class="hidden">
-            <div style="color:var(--accent); font-size:0.7rem; letter-spacing:3px; margin-bottom:10px;">[ ANALYSIS COMPLETE ]</div>
-            <p style="opacity:0.6; font-size:0.8rem;">Your compatible path is:</p>
-            <h1 id="revealed-job" style="margin:20px 0; letter-spacing:4px;">---</h1>
-            <div style="display:flex; gap:15px; justify-content:center; margin-top:30px;">
-                <button class="btn" onclick="confirmJobChange(true)">ACCEPT POWER</button>
-                <button class="btn" style="background:#222;" onclick="confirmJobChange(false)">DECLINE</button>
-            </div>
-        </div>
-        
-    </div>
-</div>
 </div>
 
-<script type="module">
-    import { onSnapshot, query, collection, where } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-    import { getFirestore, doc, getDoc, getDocs, collection, updateDoc, deleteDoc, addDoc} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-// Global Audio Context Unlock
-function unlockAudio() {
-    const silentBuffer = new AudioContext();
-    if (silentBuffer.state === 'suspended') {
-        silentBuffer.resume();
-    }
-    // Remove the listener once unlocked to save performance
-    document.removeEventListener('click', unlockAudio);
-    console.log("SYSTEM: Audio synchronized.");
-}
-
-document.addEventListener('click', unlockAudio);
-
-function playSystemSound(soundId) {
-    const audio = document.getElementById(soundId);
-    if (!audio) return;
-
-    // The 'play' method returns a Promise; we must catch the "NotAllowedError"
-    audio.play().catch(error => {
-        console.warn("Audio blocked: User interaction required before sound can play.");
-    });
-}
-
+<script>
     // --- UPDATED SYSTEM SOUNDS ---
-const sounds = {
-    // Sharp digital "Chime" for standard notifications
-    ping: new Audio('https://raw.githubusercontent.com/Aris-T004/Test-Assets/main/system-notification.mp3'), 
-    
-    // Heavy electronic "Thud/Level Up"
-    levelUp: new Audio('https://raw.githubusercontent.com/Aris-T004/Test-Assets/main/level-up.mp3'),
-    
-    // Quick "Blade/Woosh" sound for menu clicks
-    click: new Audio('https://raw.githubusercontent.com/Aris-T004/Test-Assets/main/ui-click.mp3'),
-    
-    // Glitchy "Danger" sound for Surprise Quests/Alerts
-    alert: new Audio('https://raw.githubusercontent.com/Aris-T004/Test-Assets/main/system-alert.mp3'),
-    
-    // High-pitched "Crystal" sound for item consumption
-    consume: new Audio('https://raw.githubusercontent.com/Aris-T004/Test-Assets/main/item-use.mp3')
+const systemSFX = {
+    levelUp: new Audio('level_up.mp3'),           //
+    reward: new Audio('reward consume sound.mp3'), //
+    popup: new Audio('popup.mp3')                 //
 };
 
 function playSfx(type) {
-    if (sounds[type]) {
-        const sfx = sounds[type];
-        sfx.currentTime = 0; 
-        sfx.volume = 0.5; // Slightly louder for impact
-        sfx.play().catch(e => console.warn("Interaction required for audio."));
+    const sound = systemSFX[type];
+    if (sound) {
+        sound.currentTime = 0; 
+        sound.play().catch(e => console.log("Audio waiting for user interaction."));
     }
 }
     // --- FIREBASE CONFIG ---
     const firebaseConfig = {
-        apiKey: "AIzaSyBBRAVqR1ZqthOmcYs9rxJULe7_w9AumJ4",
-        authDomain: "levelling-faa1b.firebaseapp.com",
-        projectId: "levelling-faa1b",
-        storageBucket: "levelling-faa1b.firebasestorage.app",
-        messagingSenderId: "586212668823",
-        appId: "1:586212668823:web:12eac7b3e53e4c840e40d2",
-        measurementId: "G-CZCSHWJD5E"
+        apiKey: "AIzaSyBBveJmrWxVnnalA34G7KZR6COhrOcxiok",
+        authDomain: "solo-levelling-system-5edae.firebaseapp.com",
+        projectId: "solo-levelling-system-5edae",
+        storageBucket: "solo-levelling-system-5edae.firebasestorage.app",
+        messagingSenderId: "800420338485",
+        appId: "1:800420338485:web:faa95b0a692fe9abb8ca7c"
     };
 
     firebase.initializeApp(firebaseConfig);
@@ -499,57 +434,6 @@ function playSfx(type) {
             };
             await docRef.set(p);
         }
-
-        function listenForAdminMessages(currentHunterName) {
-            console.log("System: Initializing Comm-Link for", currentHunterName);
-            
-            // Using the syntax that matches your 'db' setup
-            db.collection("notifications")
-            .where("target", "==", currentHunterName.toLowerCase())
-            .where("timestamp", ">", Date.now())
-            .onSnapshot((snapshot) => {
-                snapshot.docChanges().forEach((change) => {
-                    if (change.type === "added") {
-                        const data = change.doc.data();
-                        displaySystemPopup(data.message);
-                    }
-                });
-            }, (error) => {
-                console.error("Comm-Link Error:", error);
-            });
-        }
-
-            // 2. This "onSnapshot" stays open and waits for the Architect to hit 'Send'
-            onSnapshot(q, (snapshot) => {
-                snapshot.docChanges().forEach((change) => {
-                    if (change.type === "added") {
-                        const data = change.doc.data();
-                        displaySystemPopup(data.message);
-                    }
-                });
-            });
-
-        // 3. The UI for the message
-        function displaySystemPopup(text) {
-            const popup = document.createElement('div');
-            popup.id = "system-notification";
-            popup.style = `
-                position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
-                background: #000; border: 2px solid #ff0044; color: #fff;
-                padding: 20px; z-index: 10000; font-family: monospace;
-                box-shadow: 0 0 20px rgba(255,0,68,0.5); width: 80%; max-width: 400px;
-                text-align: center;
-            `;
-            
-            popup.innerHTML = `
-                <div style="color:#ff0044; font-size:10px; margin-bottom:10px;">[ SYSTEM MESSAGE ]</div>
-                <div>${text}</div>
-                <button onclick="this.parentElement.remove()" style="margin-top:15px; background:#222; border:1px solid #444; color:#eee; padding:5px 10px; cursor:pointer;">DISMISS</button>
-            `;
-            
-            document.body.appendChild(popup);
-        }
-        
         boot();
     }
 
@@ -622,7 +506,7 @@ function generateQuests() {
     let selectedMissions = pool
         .sort(() => 0.5 - Math.random())
         .slice(0, 5)
-        .map((q, i) => ({ ...q, id: i.toString(), done: false, isSurprise: false }));
+        .map((q, i) => ({ ...q, id: i, done: false, isSurprise: false }));
 
     // 4. Inject Surprise Quest (Level 10-15 Only)
     if (p.level >= 10 && p.level <= 15) {
@@ -648,29 +532,28 @@ function generateQuests() {
 }
 
     // Step 1: The Trigger (Asks the player)
-    function completeMission(id) {
-        if (p.missions.find(m => m.id == id)?.done) return;
-        
-        playSfx('click');
-        
-        // Create the Confirmation Overlay
-        const confirmOverlay = document.createElement('div');
-        confirmOverlay.className = 'overlay';
-        confirmOverlay.id = 'confirm-overlay';
-        const mission = p.missions.find(m => m.id == id);
-        confirmOverlay.innerHTML = `
-            <div class="hologram">
-                <div style="color:var(--accent); font-family:'JetBrains Mono'; font-size:0.7rem;">[ MISSION COMPLETION ]</div>
-                <h2 style="margin:15px 0; font-weight:300;">Confirm Results?</h2>
-                <p style="font-size:0.8rem; color:#aaa;">Have you truly completed: <br><b>${mission.n}</b>?</p>
-                <div class="btn-group">
-                    <button class="btn btn-confirm" onclick="executeMission('${id}')">YES</button>
-                    <button class="btn btn-cancel" onclick="this.parentElement.parentElement.parentElement.remove()">NO</button>
-                </div>
+function completeMission(id) {
+    if (p.missions[id].done) return;
+    
+    playSfx('click');
+    
+    // Create the Confirmation Overlay
+    const confirmOverlay = document.createElement('div');
+    confirmOverlay.className = 'overlay';
+    confirmOverlay.id = 'confirm-overlay';
+    confirmOverlay.innerHTML = `
+        <div class="hologram">
+            <div style="color:var(--accent); font-family:'JetBrains Mono'; font-size:0.7rem;">[ MISSION COMPLETION ]</div>
+            <h2 style="margin:15px 0; font-weight:300;">Confirm Results?</h2>
+            <p style="font-size:0.8rem; color:#aaa;">Have you truly completed: <br><b>${p.missions[id].n}</b>?</p>
+            <div class="btn-group">
+                <button class="btn btn-confirm" onclick="executeMission(${id})">YES</button>
+                <button class="btn btn-cancel" onclick="this.parentElement.parentElement.parentElement.remove()">NO</button>
             </div>
-        `;
-        document.body.appendChild(confirmOverlay);
-    }
+        </div>
+    `;
+    document.body.appendChild(confirmOverlay);
+}
     
 function checkDailyCompletion() {
     const regularMissions = p.missions.filter(m => !m.isSurprise);
@@ -682,12 +565,13 @@ function checkDailyCompletion() {
         // If regular quests are done but a Surprise Quest exists and is NOT done
         if (surpriseMission && !surpriseMission.done) {
             p.exp = Math.max(0, p.exp - 30); // Deduct 30 EXP
-            playSfx('alert');
+            playSfx('popup');
             showSystemMessage("PENALTY APPLIED", "Regular quests cleared, but Surprise Quest was ignored. <br><br>-30 EXP deducted.");
         } else {
             // Standard rewards for full completion
             p.streak++;
             showSystemMessage("QUEST CLEAR", "All missions completed successfully.");
+            playSfx('popup');
         }
         save();
         updateUI();
@@ -722,7 +606,7 @@ function checkDailyCompletion() {
         } 
         else if (p.level === 10) {
             document.body.classList.add('system-glitch');
-            playSfx('alert');
+            playSfx('levelUp');
             setTimeout(() => {
                 document.body.classList.remove('system-glitch');
                 showSystemMessage("SYSTEM OVERRIDE", `LEVEL 10: SURPRISE QUESTS UNLOCKED. Penalty active.`);
@@ -745,7 +629,7 @@ async function executeMission(id) {
     if (confirmOverlay) confirmOverlay.remove();
     
     // --- 1. DYNAMIC EXP REWARD ---
-    let mission = p.missions.find(m => m.id == id);
+    let mission = p.missions[id] || p.missions.find(m => m.id === id);
     let expGain = 10; // Base for INT/FOC/VIT
 
     if (mission.s === 'STR' || mission.s === 'AGI') expGain = 15; // Physical bonus
@@ -766,7 +650,7 @@ async function executeMission(id) {
     if (p.level >= 10 && p.level <= 15 && allRegularsDone && surpriseQuest && !surpriseQuest.done) {
         // Use a negative value in gainExp to handle the penalty correctly
         gainExp(-30); 
-        playSfx('alert');
+        playSfx('popup');
         showSystemMessage("PENALTY", "Regular quests cleared, but Surprise Quest was ignored. <br><br><span style='color:var(--danger)'>-30 EXP Deducted.</span>");
     }
 
@@ -786,10 +670,11 @@ async function executeMission(id) {
         p.cargo[r] = (p.cargo[r] || 0) + 1;
         
         let color = "var(--accent)";
-        if (rareRewards.includes(r)) color = "#0b2b0b";
+        if (rareRewards.includes(r)) color = "#00ff95";
         if (legendaryRewards.includes(r)) color = "#ffaa00";
 
         showSystemMessage("QUEST CLEAR", `Daily tasks finalized. <br>Received: <span style="color:${color}">${r}</span>`);
+        playSfx('popup');
     }
 
     // --- 4. LEVEL UP CHECK REMOVED ---
@@ -815,22 +700,8 @@ async function executeMission(id) {
         p.stats[s] += 5; return `Blessed! ${s} increased by 5.`; 
     }},
     "Shadow Essence": { desc: "Rare: AGI +5. Green Grade.", run: () => { p.stats.AGI += 5; return "AGI +5."; }},
-    "Warrior's Spirit": {
-        desc: "A flickering dark green flame. Increases STR by 5.",
-        run: () => {
-            p.stats.STR += 5;
-            showSystemMessage("STRENGTH UP", "+5 STR gained from Warrior's Spirit.");
-            return true; // Consumes the item
-        }
-    },
-    "Scholar's Scroll": {
-        desc: "Ancient text containing forbidden knowledge. Increases INT by 5.",
-        run: () => {
-            p.stats.INT += 5;
-            showSystemMessage("INTELLECT UP", "+5 INT gained from Scholar's Scroll.");
-            return true; // Consumes the item
-        }
-    },
+    "Warrior's Spirit": { desc: "Rare: STR +5. Green Grade.", run: () => { p.stats.STR += 5; return "STR +5."; }},
+    "Scholar's Scroll": { desc: "Rare: INT +5. Green Grade.", run: () => { p.stats.INT += 5; return "INT +5."; }},
     "Elixir of Life": { 
         desc: "Grants 50 EXP.", 
         run: () => { 
@@ -841,47 +712,34 @@ async function executeMission(id) {
     "Elixir of Greatness": { desc: "Legendary: ALL STATS +5. Gold Grade.", run: () => { 
         Object.keys(p.stats).forEach(k => p.stats[k] += 5); return "All stats increased by 5."; 
     }},
-    "System Key": {
-        desc: "A key that glows with a faint dark green aura.",
-        run: () => {
-            if (p.level < 40) {
-                showSystemMessage("SYSTEM", "LEVEL TOO LOW (REQ. 40)");
-                return false; // Returns false so the key is NOT consumed
-            }
-            
-            // TRIGGER THE QUEST
-            startJobQuest(); 
-            
-            return true; // Returns true so the key IS consumed
-        }
-    }
+    "System Key": { desc: "Legendary: Required for Job Change. [LVL 40]. Gold Grade", run: () => { 
+        if (p.level < 40) { p.cargo["System Key"]++; return "ACCESS DENIED: Insufficient Level."; }
+        p.job = "TRIAL IN PROGRESS"; return "JOB CHANGE PROTOCOL INITIATED.";
+    }}
 };
 
-function handleItemUse(itemName) {
+function handleItemInteraction(itemName) {
+    const now = Date.now();
     const effect = itemEffects[itemName];
 
-    // 1. Check if the item exists in our effects list
-    if (effect && typeof effect.run === 'function') {
-        
-        // 2. Execute the 'run' function (This wakes up startJobQuest)
-        const usedSuccessfully = effect.run();
-
-        // 3. If the function returns 'true', remove the item from inventory
-        if (usedSuccessfully) {
-            if (p.cargo[itemName] > 1) {
-                p.cargo[itemName]--;
-            } else {
-                delete p.cargo[itemName];
-            }
-            
-            // 4. Save and Refresh UI
-            save();
-            render('inventory');
-            console.log(`${itemName} has been consumed.`);
-        }
+    if (now - lastTap < 300) {
+        // DOUBLE TAP -> CONSUME
+        consumeItem(itemName);
+        playSfx('popup');
     } else {
-        console.warn("This item has no use effect.");
+        // SINGLE TAP -> SHOW DEFINITION
+        // We use a small timeout to ensure we aren't about to double tap
+        setTimeout(() => {
+            if (Date.now() - lastTap >= 300) {
+                playSfx('popup');
+                showSystemMessage(
+                    itemName.toUpperCase(), 
+                    `<span style="color:var(--accent)">EFFECT:</span><br>${effect.desc}<br><br><small>[ Double-tap to confirm consumption ]</small>`
+                );
+            }
+        }, 305);
     }
+    lastTap = now;
 }
     
 function consumeItem(itemName) {
@@ -894,6 +752,7 @@ function consumeItem(itemName) {
         const resultText = itemEffects[itemName].run(); // Calls the 'run' function
         
         showSystemMessage("ITEM CONSUMED", resultText);
+        playSfx('reward');
         
         // Level up check
         if (p.exp >= p.level * 100) {
@@ -916,17 +775,8 @@ function consumeItem(itemName) {
     if (timerId) clearInterval(timerId);
 
     if (tab === 'status') {
-        const statColors = { STR: '#ff3e3e', AGI: '#043927', VIT: '#ffaa00', INT: '#bf00ff', FOC: '#00d4ff' };
-        cont.innerHTML = `
-        <div style="text-align:center; padding: 20px 0; border-bottom: 1px solid #222; margin-bottom: 10px;">
-            <div style="font-size: 0.6rem; color: #555; letter-spacing: 2px; margin-bottom: 5px;">CURRENT PATH</div>
-            <div style="font-size: 1.2rem; font-family: 'JetBrains Mono';">
-                ${getJobMarkup(p.job || "UNAWAKENED")}
-            </div>
-        </div>
-        
-        <div class="chart-wrap"><canvas id="statsChart"></canvas></div>
-        ` +
+        const statColors = { STR: '#ff3e3e', AGI: '#00ff95', VIT: '#ffaa00', INT: '#bf00ff', FOC: '#00d4ff' };
+        cont.innerHTML = `<div class="chart-wrap"><canvas id="statsChart"></canvas></div>` + 
             Object.entries(p.stats).map(([k,v]) => `
             <div style="display:flex; justify-content:space-between; padding:15px; border-bottom:1px solid #111; font-family:'JetBrains Mono';">
                 <span style="color:#777;">${k}</span>
@@ -941,42 +791,28 @@ function consumeItem(itemName) {
             </div>`).join('');
         timerId = setInterval(updateTimer, 1000); updateTimer();
     } else if (tab === 'cargo') {
-    const hasItems = Object.entries(p.cargo).some(([n, c]) => c > 0);
-    if (!hasItems) { 
-        cont.innerHTML = `<div style="text-align:center; padding:50px; color:#444;">INVENTORY EMPTY</div>`; 
-        return; 
-    }
+        const hasItems = Object.entries(p.cargo).some(([n, c]) => c > 0);
+        if (!hasItems) { cont.innerHTML = `<div style="text-align:center; padding:50px; color:#444;">INVENTORY EMPTY</div>`; return; }
 
-    cont.innerHTML = `<div style="color:#bf00ff; font-size:0.6rem; text-align:center; margin-bottom:15px; letter-spacing:2px;">[ DOUBLE-TAP TO ACTIVATE ]</div>` +
-        Object.entries(p.cargo).map(([name, count]) => {
-            if (count <= 0) return '';
+        cont.innerHTML = `<div style="color:#bf00ff; font-size:0.6rem; text-align:center; margin-bottom:15px;">[ DOUBLE-TAP TO USE ]</div>` +
+            Object.entries(p.cargo).map(([name, count]) => {
+                if (count <= 0) return '';
+                let color = '#bf00ff'; // Purple
+                if (name === 'System Key' || name === 'Elixir of Greatness') color = '#ffaa00'; // Gold
+                else if (["Shadow Essence", "Warrior's Spirit", "Scholar's Scroll", "Elixir of Life"].includes(name)) color = '#00ff95'; // Green
 
-            // 1. Pull the description from itemEffects
-            const info = itemEffects[name] || { desc: "System Item: No data available." };
-
-            // 2. Determine Color Logic
-            let color = '#bf00ff'; // Default Purple
-            if (name === 'System Key' || name === 'Elixir of Greatness') color = '#ffaa00'; // Gold
-            else if (["Shadow Essence", "Warrior's Spirit", "Scholar's Scroll", "Elixir of Life"].includes(name)) color = '#043927'; // Green
-
-            return `
-            <div class="quest-card" onclick="handleItemInteraction('${name}')" style="border-color:${color}; box-shadow: 0 0 10px ${color}33; display:flex; justify-content:space-between; align-items:center;">
-                <div style="flex-grow:1;">
-                    <span class="quest-title" style="color:${color}; display:block;">${name}</span>
-                    <!-- 3. Add the Description here -->
-                    <div style="font-size:0.55rem; color:#888; margin-top:4px; max-width:80%; line-height:1.2;">
-                        ${info.desc}
+                return `
+                <div class="quest-card" onclick="handleItemInteraction('${name}')" style="border-color:${color}; box-shadow: 0 0 10px ${color}33;">
+                    <div>
+                        <span class="quest-title" style="color:${color}">${name}</span>
+                        <div style="font-size:0.5rem; color:#555; margin-top:4px;">${color==='#ffaa00'?'ARTIFACT':'SYSTEM REWARD'}</div>
                     </div>
-                </div>
-                <div style="text-align:right;">
                     <span style="color:${color}; font-size:1.2rem; font-family:'JetBrains Mono';">x${count}</span>
-                    <div style="font-size:0.4rem; color:#444; margin-top:4px;">${color==='#ffaa00'?'ARTIFACT':'SYSTEM REWARD'}</div>
-                </div>
-            </div>`;
-        }).join('');
-}
+                </div>`;
+            }).join('');
+    }
         // Add this inside your existing render(tab) function
-    else if (tab === 'ranking') {
+      else if (tab === 'ranking') {
         cont.innerHTML = `
             <div style="text-align:center; color:var(--accent); font-family:'JetBrains Mono'; font-size:0.7rem; margin-bottom:20px;">
                 [ GLOBAL HUNTER RANKINGS ]
@@ -1095,124 +931,35 @@ function consumeItem(itemName) {
     
     // Querying 'hunters' collection by Level (Highest to Lowest)
     db.collection('hunters')
-        .orderBy('level', 'desc')
-        .orderBy('exp', 'desc')
-        .limit(20)
-        .onSnapshot(snapshot => {
-        if (!document.getElementById('leaderboard-display')) return; // Exit if user switched tabs
-            
-            lbDisplay.innerHTML = "";
-            
-            snapshot.docs.forEach((doc, index) => {
-                const data = doc.data();
-                const isMe = auth.currentUser && auth.currentUser.uid === doc.id;
-                const rank = index + 1;
+      .orderBy('level', 'desc')
+      .orderBy('exp', 'desc')
+      .limit(20)
+      .onSnapshot(snapshot => {
+          if (!document.getElementById('leaderboard-display')) return; // Exit if user switched tabs
+          
+          lbDisplay.innerHTML = "";
+          
+          snapshot.docs.forEach((doc, index) => {
+              const data = doc.data();
+              const isMe = auth.currentUser && auth.currentUser.uid === doc.id;
+              const rank = index + 1;
 
-                const item = document.createElement('div');
-                item.className = `lb-item ${isMe ? 'is-me' : ''}`;
-                item.innerHTML = `
-                    <div class="lb-rank">${rank.toString().padStart(2, '0')}</div>
-                    <div class="lb-info">
-                        <span class="name">${data.name || "UNKNOWN"} ${isMe ? '(YOU)' : ''}</span>
-                        <span class="job">${data.job || "UNAWAKENED"}</span>
-                    </div>
-                    <div class="lb-level">LVL ${data.level}</div>
-                `;
-                lbDisplay.appendChild(item);
-            });
-        }, error => {
-            console.error("Leaderboard Error:", error);
-            lbDisplay.innerHTML = `<div style="color:var(--danger); font-size:0.7rem;">FAILED TO SYNC RANKINGS. CHECK INDEXES.</div>`;
-        });
-}
-
-function startJobQuest() {
-    const overlay = document.getElementById('evolution-overlay');
-    const bar = document.getElementById('evo-bar-fill');
-    
-    // 1. Reset UI and Show Dark Overlay
-    overlay.classList.remove('hidden');
-    document.getElementById('evo-loading').classList.remove('hidden');
-    document.getElementById('evo-result').classList.add('hidden');
-    bar.style.width = '0%';
-
-    // 2. Start Loading Bar Animation (3 seconds)
-    setTimeout(() => { bar.style.width = '100%'; }, 100);
-
-    // 3. Perform Stat Analysis after 3.2 seconds
-    setTimeout(() => {
-        document.getElementById('evo-loading').classList.add('hidden');
-        document.getElementById('evo-result').classList.remove('hidden');
-        
-        const s = p.stats;
-        let job = "ASSASSIN"; // Default if stats are even
-        
-        // Automated Class Selection Logic
-        if (s.INT > s.STR && s.INT > s.AGI) {
-            job = "MAGE";
-        } else if (s.STR > s.AGI && s.STR > s.INT) {
-            job = "TANKER";
-        } else if (s.AGI > s.STR && s.AGI > s.INT) {
-            job = "SHADOW MONARCH";
-        }
-        
-        // Display result and store it temporarily
-        document.getElementById('revealed-job').innerHTML = getJobMarkup(job);
-        p.pendingJob = job; 
-    }, 3200);
-}
-
-function confirmJobChange(accepted) {
-    if (accepted && p.pendingJob) {
-        p.job = p.pendingJob; 
-        showSystemMessage("EVOLUTION", `AWAKENED AS ${p.job}`);
-    } else {
-        showSystemMessage("SYSTEM", "EVOLUTION DECLINED. STATUS: UNAWAKENED");
-    }
-    
-    // Cleanup and Save
-    delete p.pendingJob;
-    document.getElementById('evolution-overlay').classList.add('hidden');
-    save();
-    updateUI();
-    render('status'); 
-}
-
-// Generates the Icons and Colors for each Job
-function getJobMarkup(job) {
-    const styles = {
-        'MAGE': { icon: '✦', color: '#00f2ff' },
-        'TANKER': { icon: '🛡', color: '#ff8800' },
-        'ASSASSIN': { icon: '⚔', color: '#ff0044' },
-        'SHADOW MONARCH': { icon: '♔', color: '#bf00ff' },
-        'UNAWAKENED': { icon: '⬡', color: '#666' }
-    };
-    const s = styles[job.toUpperCase()] || styles['UNAWAKENED'];
-    return `<span style="color:${s.color}; text-shadow: 0 0 10px ${s.color};">${s.icon} ${job}</span>`;
-}
-
-// This function should be GLOBAL
-function useItem(itemName) {
-    const item = itemEffects[itemName];
-
-    if (!item) {
-        console.error("Item has no effect defined.");
-        return;
-    }
-
-    // This line is what "wakes up" startJobQuest()
-    const result = item.run(); 
-
-    // Optional: If the item is a potion/key, remove it from inventory
-    if (result === true) {
-        if (p.cargo[itemName] > 1) {
-            p.cargo[itemName]--;
-        } else {
-            delete p.cargo[itemName];
-        }
-        save();
-        render('inventory'); 
-    }
+              const item = document.createElement('div');
+              item.className = `lb-item ${isMe ? 'is-me' : ''}`;
+              item.innerHTML = `
+                  <div class="lb-rank">${rank.toString().padStart(2, '0')}</div>
+                  <div class="lb-info">
+                      <span class="name">${data.name || "UNKNOWN"} ${isMe ? '(YOU)' : ''}</span>
+                      <span class="job">${data.job || "UNAWAKENED"}</span>
+                  </div>
+                  <div class="lb-level">LVL ${data.level}</div>
+              `;
+              lbDisplay.appendChild(item);
+          });
+      }, error => {
+          console.error("Leaderboard Error:", error);
+          lbDisplay.innerHTML = `<div style="color:var(--danger); font-size:0.7rem;">FAILED TO SYNC RANKINGS. CHECK INDEXES.</div>`;
+      });
 }
 </script>
 </body>
