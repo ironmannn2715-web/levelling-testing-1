@@ -566,6 +566,17 @@ function checkDailyCompletion() {
     if (regularDone) {
 
         const confirmOverlay = document.getElementById('confirm-overlay');
+        confirmOverlay1.innerHTML =`
+            <div class="hologram">
+                <div style="color:var(--accent); font-family:'JetBrains Mono'; font-size:0.7rem;">[ MISSION COMPLETION ]</div>
+                <h2 style="margin:15px 0; font-weight:300;">Confirm Results?</h2>
+                <p style="font-size:0.8rem; color:#aaa;">Have you truly completed: <br><b>${p.missions['id'].n}</b>?</p>
+                <div class="btn-group">
+                    <button class="btn btn-confirm" onclick="executeMission('${id}')">YES</button>
+                    <button class="btn btn-cancel" onclick="this.parentElement.parentElement.parentElement.remove()">NO</button>
+                </div>
+            </div>
+        `;
         if (confirmOverlay) confirmOverlay.remove();
     // 1. CASE: Penalty (Regulars done, but Surprise is ignored/incomplete)
         if (surpriseMission && !surpriseMission.done) {
