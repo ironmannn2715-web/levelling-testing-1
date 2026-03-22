@@ -564,21 +564,32 @@ function checkDailyCompletion() {
     const regularDone = regularMissions.every(m => m.done);
 
     if (regularDone) {
-        // If regular quests are done but a Surprise Quest exists and is NOT done
-        if (surpriseMission && !surpriseMission.done) {
-            p.exp = Math.max(0, p.exp - 30); // Deduct 30 EXP
+    // 1. CASE: Penalty (Regulars done, but Surprise is ignored/incomplete)
+    if (surpriseMission && !surpriseMission.done) {
+        
+        // Add a 'penaltyApplied' check here if you want to stop the infinite loop
+        if (!surpriseMission.penaltyApplied) {
+            p.exp = Math.max(0, p.exp - 30); 
             playSfx('pop_up');
-            showSystemMessage("PENALTY APPLIED", "Regular quests cleared, but Surprise Quest was ignored. <br><br>-30 EXP deducted.");
-        } else {
-            // Standard rewards for full completion
-            p.streak++;
-            playSfx('pop_up');
-            showSystemMessage("QUEST CLEAR", "All missions completed successfully.");
+            showSystemMessage("PENALTY APPLIED", "Surprise Quest was ignored. <br><br>-30 EXP deducted.");
             
+            surpriseMission.penaltyApplied = true; // Mark it so it only happens once
+            save();
+            updateUI();
         }
+
+    } 
+    // 2. CASE: Full Success (Regulars done AND Surprise is either DONE or doesn't exist)
+    else if (!surpriseMission || surpriseMission.done) {
+        
+        p.streak++;
+        showSystemMessage("QUEST CLEAR", "All missions completed successfully.");
+        playSfx('pop_up');
+        
         save();
         updateUI();
     }
+}
 }
 
     function gainExp(amount) {
