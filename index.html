@@ -810,7 +810,6 @@ function consumeItem(itemName) {
     
     timerId = setInterval(updateTimer, 1000); 
     updateTimer();
-}
     } else if (tab === 'cargo') {
         const hasItems = Object.entries(p.cargo).some(([n, c]) => c > 0);
         if (!hasItems) { cont.innerHTML = `<div style="text-align:center; padding:50px; color:#444;">INVENTORY EMPTY</div>`; return; }
