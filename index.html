@@ -564,6 +564,9 @@ function checkDailyCompletion() {
     const regularDone = regularMissions.every(m => m.done);
 
     if (regularDone) {
+
+        const confirmOverlay = document.getElementById('confirm-overlay');
+        if (confirmOverlay) confirmOverlay.remove();
     // 1. CASE: Penalty (Regulars done, but Surprise is ignored/incomplete)
         if (surpriseMission && !surpriseMission.done) {
             
@@ -798,18 +801,12 @@ function consumeItem(itemName) {
             </div>`).join('');
         initChart();
     } else if (tab === 'mission') {
-    cont.innerHTML = `<div id="timer">00:00:00</div>` + p.missions.map(m => `
-        <div class="quest-card ${m.done ? 'done' : ''}" 
-            onclick="${m.done ? '' : `ConfirmOverlay('${m.id}')`}">
-            <div>
-                <span class="quest-req">${m.s}</span><br>
-                <span class="quest-title">${m.n}</span>
-            </div>
-            <div class="quest-req">REQ: ${m.r}</div>
-        </div>`).join('');
-    
-    timerId = setInterval(updateTimer, 1000); 
-    updateTimer();
+        cont.innerHTML = `<div id="timer">00:00:00</div>` + p.missions.map(m => `
+            <div class="quest-card ${m.done ? 'done' : ''}" onclick="completeMission('${m.id}')">
+                <div><span class="quest-req">${m.s}</span><br><span class="quest-title">${m.n}</span></div>
+                <div class="quest-req">REQ: ${m.r}</div>
+            </div>`).join('');
+        timerId = setInterval(updateTimer, 1000); updateTimer();
     } else if (tab === 'cargo') {
         const hasItems = Object.entries(p.cargo).some(([n, c]) => c > 0);
         if (!hasItems) { cont.innerHTML = `<div style="text-align:center; padding:50px; color:#444;">INVENTORY EMPTY</div>`; return; }
