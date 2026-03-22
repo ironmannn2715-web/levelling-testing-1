@@ -800,7 +800,7 @@ function consumeItem(itemName) {
     } else if (tab === 'mission') {
     cont.innerHTML = `<div id="timer">00:00:00</div>` + p.missions.map(m => `
         <div class="quest-card ${m.done ? 'done' : ''}" 
-            onclick="${m.done ? '' : `openConfirmOverlay('${m.id}')`}">
+            onclick="${m.done ? '' : `ConfirmOverlay('${m.id}')`}">
             <div>
                 <span class="quest-req">${m.s}</span><br>
                 <span class="quest-title">${m.n}</span>
