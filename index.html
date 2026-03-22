@@ -372,9 +372,10 @@
 <script>
     // --- UPDATED SYSTEM SOUNDS ---
 const systemSFX = {
-    levelUp: new Audio('level_up.mp3'),           //
+    level_up: new Audio('level_up.mp3'),           //
     reward: new Audio('reward consume sound.mp3'), //
-    popup: new Audio('popup.mp3')                 //
+    popup: new Audio('pop_up.mp3'),  
+    click: new Audio('click_up.mp3')                //
 };
 
 function playSfx(type) {
@@ -383,17 +384,16 @@ function playSfx(type) {
         sound.currentTime = 0; 
         sound.play().catch(e => console.log("Audio waiting for user interaction."));
     }
-}
-    // --- FIREBASE CONFIG ---
-const firebaseConfig = {
-  apiKey: "AIzaSyBBRAVqR1ZqthOmcYs9rxJULe7_w9AumJ4",
-  authDomain: "levelling-faa1b.firebaseapp.com",
-  projectId: "levelling-faa1b",
-  storageBucket: "levelling-faa1b.firebasestorage.app",
-  messagingSenderId: "586212668823",
-  appId: "1:586212668823:web:12eac7b3e53e4c840e40d2",
-  measurementId: "G-CZCSHWJD5E"
-    };
+}    // --- FIREBASE CONFIG ---
+    const firebaseConfig = {
+            apiKey: "AIzaSyBBRAVqR1ZqthOmcYs9rxJULe7_w9AumJ4",
+            authDomain: "levelling-faa1b.firebaseapp.com",
+            projectId: "levelling-faa1b",
+            storageBucket: "levelling-faa1b.firebasestorage.app",
+            messagingSenderId: "586212668823",
+            appId: "1:586212668823:web:12eac7b3e53e4c840e40d2",
+            measurementId: "G-CZCSHWJD5E"
+};
 
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
@@ -457,7 +457,8 @@ const firebaseConfig = {
             const incomplete = p.missions.some(m => !m.done);
             if (incomplete && p.level > 1) {
                 p.level--; p.streak = 0;
-                alert("PENALTY PROTOCOL: Daily Quest Incomplete. Level Reduced.");
+                showSystemMessage("PENALTY PROTOCOL: Daily Quest Incomplete. Level Reduced.");
+                playSfx('popup');
             }
             p.lastUpdate = today;
             generateQuests();
@@ -566,13 +567,14 @@ function checkDailyCompletion() {
         // If regular quests are done but a Surprise Quest exists and is NOT done
         if (surpriseMission && !surpriseMission.done) {
             p.exp = Math.max(0, p.exp - 30); // Deduct 30 EXP
-            playSfx('popup');
+            playSfx('pop_up');
             showSystemMessage("PENALTY APPLIED", "Regular quests cleared, but Surprise Quest was ignored. <br><br>-30 EXP deducted.");
         } else {
             // Standard rewards for full completion
             p.streak++;
+            playSfx('pop_up');
             showSystemMessage("QUEST CLEAR", "All missions completed successfully.");
-            playSfx('popup');
+            
         }
         save();
         updateUI();
@@ -600,21 +602,22 @@ function checkDailyCompletion() {
 
         // --- MILESTONE LOGIC ---
         if (p.level === 5) {
-            playSfx('levelUp');
+            playSfx('level_up');
             const bonuses = ["Blessed Box", "Rest Protocol", "Focus Token"];
             bonuses.forEach(item => { p.cargo[item] = (p.cargo[item] || 0) + 1; });
             showSystemMessage("MILESTONE 5", `Level 5 reached. Bonus rewards granted.`);
+            playSfx('pop_up');
         } 
         else if (p.level === 10) {
             document.body.classList.add('system-glitch');
-            playSfx('levelUp');
             setTimeout(() => {
                 document.body.classList.remove('system-glitch');
+                playSfx('pop_up');
                 showSystemMessage("SYSTEM OVERRIDE", `LEVEL 10: SURPRISE QUESTS UNLOCKED. Penalty active.`);
             }, 1000);
         } 
         else {
-            playSfx('levelUp');
+            playSfx('level_up');
             showSystemMessage("LEVEL UP", `Reached Level ${p.level}`);
         }
     }
@@ -651,7 +654,7 @@ async function executeMission(id) {
     if (p.level >= 10 && p.level <= 15 && allRegularsDone && surpriseQuest && !surpriseQuest.done) {
         // Use a negative value in gainExp to handle the penalty correctly
         gainExp(-30); 
-        playSfx('popup');
+        playSfx('pop_up');
         showSystemMessage("PENALTY", "Regular quests cleared, but Surprise Quest was ignored. <br><br><span style='color:var(--danger)'>-30 EXP Deducted.</span>");
     }
 
@@ -675,7 +678,6 @@ async function executeMission(id) {
         if (legendaryRewards.includes(r)) color = "#ffaa00";
 
         showSystemMessage("QUEST CLEAR", `Daily tasks finalized. <br>Received: <span style="color:${color}">${r}</span>`);
-        playSfx('popup');
     }
 
     // --- 4. LEVEL UP CHECK REMOVED ---
@@ -726,13 +728,13 @@ function handleItemInteraction(itemName) {
     if (now - lastTap < 300) {
         // DOUBLE TAP -> CONSUME
         consumeItem(itemName);
-        playSfx('popup');
+        playSfx('reward');
     } else {
         // SINGLE TAP -> SHOW DEFINITION
         // We use a small timeout to ensure we aren't about to double tap
         setTimeout(() => {
             if (Date.now() - lastTap >= 300) {
-                playSfx('popup');
+                playSfx('click');
                 showSystemMessage(
                     itemName.toUpperCase(), 
                     `<span style="color:var(--accent)">EFFECT:</span><br>${effect.desc}<br><br><small>[ Double-tap to confirm consumption ]</small>`
@@ -758,7 +760,7 @@ function consumeItem(itemName) {
         // Level up check
         if (p.exp >= p.level * 100) {
             p.level++; p.exp = 0;
-            playSfx('levelUp');
+            playSfx('level_up');
             showSystemMessage("LEVEL UP", `Reached Level ${p.level}`);
         }
         
