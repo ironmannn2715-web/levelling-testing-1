@@ -565,31 +565,31 @@ function checkDailyCompletion() {
 
     if (regularDone) {
     // 1. CASE: Penalty (Regulars done, but Surprise is ignored/incomplete)
-    if (surpriseMission && !surpriseMission.done) {
-        
-        // Add a 'penaltyApplied' check here if you want to stop the infinite loop
-        if (!surpriseMission.penaltyApplied) {
-            p.exp = Math.max(0, p.exp - 30); 
-            playSfx('pop_up');
-            showSystemMessage("PENALTY APPLIED", "Surprise Quest was ignored. <br><br>-30 EXP deducted.");
+        if (surpriseMission && !surpriseMission.done) {
             
-            surpriseMission.penaltyApplied = true; // Mark it so it only happens once
+            // Add a 'penaltyApplied' check here if you want to stop the infinite loop
+            if (!surpriseMission.penaltyApplied) {
+                p.exp = Math.max(0, p.exp - 30); 
+                playSfx('pop_up');
+                showSystemMessage("PENALTY APPLIED", "Surprise Quest was ignored. <br><br>-30 EXP deducted.");
+                
+                surpriseMission.penaltyApplied = true; // Mark it so it only happens once
+                save();
+                updateUI();
+            }
+
+        } 
+        // 2. CASE: Full Success (Regulars done AND Surprise is either DONE or doesn't exist)
+        else if (!surpriseMission || surpriseMission.done) {
+            
+            p.streak++;
+            showSystemMessage("QUEST CLEAR", "All missions completed successfully.");
+            playSfx('pop_up');
+            
             save();
             updateUI();
         }
-
-    } 
-    // 2. CASE: Full Success (Regulars done AND Surprise is either DONE or doesn't exist)
-    else if (!surpriseMission || surpriseMission.done) {
-        
-        p.streak++;
-        showSystemMessage("QUEST CLEAR", "All missions completed successfully.");
-        playSfx('pop_up');
-        
-        save();
-        updateUI();
     }
-}
 }
 
     function gainExp(amount) {
@@ -798,12 +798,19 @@ function consumeItem(itemName) {
             </div>`).join('');
         initChart();
     } else if (tab === 'mission') {
-        cont.innerHTML = `<div id="timer">00:00:00</div>` + p.missions.map(m => `
-            <div class="quest-card ${m.done ? 'done' : ''}" onclick="completeMission('${m.id}')">
-                <div><span class="quest-req">${m.s}</span><br><span class="quest-title">${m.n}</span></div>
-                <div class="quest-req">REQ: ${m.r}</div>
-            </div>`).join('');
-        timerId = setInterval(updateTimer, 1000); updateTimer();
+    cont.innerHTML = `<div id="timer">00:00:00</div>` + p.missions.map(m => `
+        <div class="quest-card ${m.done ? 'done' : ''}" 
+            onclick="${m.done ? '' : `openConfirmOverlay('${m.id}')`}">
+            <div>
+                <span class="quest-req">${m.s}</span><br>
+                <span class="quest-title">${m.n}</span>
+            </div>
+            <div class="quest-req">REQ: ${m.r}</div>
+        </div>`).join('');
+    
+    timerId = setInterval(updateTimer, 1000); 
+    updateTimer();
+}
     } else if (tab === 'cargo') {
         const hasItems = Object.entries(p.cargo).some(([n, c]) => c > 0);
         if (!hasItems) { cont.innerHTML = `<div style="text-align:center; padding:50px; color:#444;">INVENTORY EMPTY</div>`; return; }
