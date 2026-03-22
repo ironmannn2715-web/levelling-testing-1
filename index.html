@@ -522,7 +522,7 @@ function generateQuests() {
         
         selectedMissions.push({
             ...randomSQ,
-            id: 'sq_99',
+            id: '27',
             done: false,
             isSurprise: true
         });
@@ -564,46 +564,31 @@ function checkDailyCompletion() {
     const regularDone = regularMissions.every(m => m.done);
 
     if (regularDone) {
-
-        const confirmOverlay = document.getElementById('confirm-overlay');
-        confirmOverlay1.innerHTML =`
-            <div class="hologram">
-                <div style="color:var(--accent); font-family:'JetBrains Mono'; font-size:0.7rem;">[ MISSION COMPLETION ]</div>
-                <h2 style="margin:15px 0; font-weight:300;">Confirm Results?</h2>
-                <p style="font-size:0.8rem; color:#aaa;">Have you truly completed: <br><b>${p.missions['id'].n}</b>?</p>
-                <div class="btn-group">
-                    <button class="btn btn-confirm" onclick="executeMission('${id}')">YES</button>
-                    <button class="btn btn-cancel" onclick="this.parentElement.parentElement.parentElement.remove()">NO</button>
-                </div>
-            </div>
-        `;
-        if (confirmOverlay) confirmOverlay.remove();
     // 1. CASE: Penalty (Regulars done, but Surprise is ignored/incomplete)
-        if (surpriseMission && !surpriseMission.done) {
-            
-            // Add a 'penaltyApplied' check here if you want to stop the infinite loop
-            if (!surpriseMission.penaltyApplied) {
-                p.exp = Math.max(0, p.exp - 30); 
-                playSfx('pop_up');
-                showSystemMessage("PENALTY APPLIED", "Surprise Quest was ignored. <br><br>-30 EXP deducted.");
-                
-                surpriseMission.penaltyApplied = true; // Mark it so it only happens once
-                save();
-                updateUI();
-            }
-
-        } 
-        // 2. CASE: Full Success (Regulars done AND Surprise is either DONE or doesn't exist)
-        else if (!surpriseMission || surpriseMission.done) {
-            
-            p.streak++;
-            showSystemMessage("QUEST CLEAR", "All missions completed successfully.");
+    if (surpriseMission && !surpriseMission.done) {
+        
+        // Add a 'penaltyApplied' check here if you want to stop the infinite loop
+        if (!surpriseMission.penaltyApplied) {
+            p.exp = Math.max(0, p.exp - 30); 
             playSfx('pop_up');
+            showSystemMessage("PENALTY APPLIED", "Surprise Quest was ignored. <br><br>-30 EXP deducted.");
             
+            surpriseMission.penaltyApplied = true; // Mark it so it only happens once
             save();
             updateUI();
         }
+
+    } 
+    // 2. CASE: Full Success (Regulars done AND Surprise is either DONE or doesn't exist)
+    else if (!surpriseMission || surpriseMission.done) {
+        
+        p.streak++;
+        showSystemMessage("QUEST CLEAR", "All missions completed successfully.");
+        
+        save();
+        updateUI();
     }
+}
 }
 
     function gainExp(amount) {
